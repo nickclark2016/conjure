@@ -1,0 +1,14 @@
+{
+  "name": "premake-core",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "compile": "tsc -b tsconfig.build.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "packages/*"
+  ]
+}
