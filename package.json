@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "compile": "tsc -b tsconfig.build.json"
+    "compile": "tsc -b tsconfig.build.json",
+    "start": "node ./packages/cli/build/index.js"
   },
   "keywords": [],
   "author": "",
