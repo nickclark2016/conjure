@@ -1,3 +1,12 @@
 node_modules/**
 **/build/
 **.tsbuildinfo
+
+**.vs
+**.sln
+**.vcxproj
+**.vcxproj.user
+**Makefile
+
+**/bin
+**/obj

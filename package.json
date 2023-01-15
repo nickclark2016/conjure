@@ -10,6 +10,9 @@
   "author": "",
   "license": "ISC",
   "workspaces": [
-    "packages/*"
+    "packages/cli",
+    "packages/core",
+    "packages/modules/exporters/vstudio",
+    "packages/modules/toolsets/msc"
   ]
 }

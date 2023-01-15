@@ -10,6 +10,7 @@ export class DOMNode {
 
     addChild(node: DOMNode) {
         this._children.push(node);
+        node.setParent(this);
     }
 
     getChildren(): ReadonlyArray<DOMNode> {

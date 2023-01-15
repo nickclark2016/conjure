@@ -1,5 +1,6 @@
-import { APIAcceptedType, APIRegistry } from "../api";
+import { APIAcceptedTypes, APIRegistry } from "../api";
 import { DOMNode } from "../dom";
+import { includeFileStack } from "../include";
 import { State } from "../state";
 
 export type ScopeAPIContextAccumulator = (name: string) => any;
@@ -11,7 +12,7 @@ export type ScopeAPIInfo = {
 };
 
 function validateScope(node: DOMNode): boolean {
-    const scopeApi = APIRegistry.fetch(node.apiName);
+    const scopeApi = APIRegistry.get().fetch(node.apiName);
     if (scopeApi) {
         const allowedIn = scopeApi.allowedIn();
         const parent = node.getParent();
@@ -29,7 +30,7 @@ function validateScope(node: DOMNode): boolean {
     return false;
 }
 
-function validate(self: DOMNode | null): boolean {
+export function validate(self: DOMNode | null): boolean {
     if (self) {
         return validateScope(self);
     }
@@ -41,11 +42,12 @@ function buildFunctor(info: ScopeAPIInfo) {
         const ctx = info.ctxAccumulator(label);
         const node = new DOMNode(typeof label === 'string' ? label : JSON.stringify(label));
         node.apiName = info.name;
+        node.scriptLocation = includeFileStack[includeFileStack.length - 1];
 
         State.get().push(node);
         const isValid = validate(State.get().peek());
         if (!isValid) {
-            throw new Error(`Scope API ${info.name} not defined in scope ${node.getParent()?.getName() || '[unknown scope]'}`);
+            throw new Error(`Scope API ${info.name} not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);
         }
 
         callback(ctx);
@@ -68,18 +70,18 @@ export class ScopeRegistry {
 
         const apiInfo = {
             name: info.name,
-            accepts: APIAcceptedType.Function,
+            accepts: APIAcceptedTypes.Function,
             expectedArgumentCount: 2,
             allowedInScopes: info.allowedInScopes,
             acceptedArguments: [],
             action: buildFunctor(info)
         };
 
-        APIRegistry.register(apiInfo);
+        APIRegistry.get().register(apiInfo);
     }
 
     remove(name: string): boolean {
-        APIRegistry.remove(name);
+        APIRegistry.get().remove(name);
         return this._scopes.delete(name);
     }
 

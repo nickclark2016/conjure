@@ -13,6 +13,8 @@
   "license": "ISC",
   "dependencies": {
     "@premake-core/core": "^1.0.0",
+    "@premake-core/vstudio": "^1.0.0",
+    "@premake-core/msc": "^1.0.0",
     "@types/node": "^18.11.18"
   },
   "devDependencies": {

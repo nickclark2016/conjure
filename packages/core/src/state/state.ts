@@ -5,7 +5,7 @@ export class State {
     private _root: DOMNode | null = null;
     private _active: DOMNode | null = null;
 
-    private static readonly _singleton = new State();
+    private static _singleton = new State();
 
     private constructor() {
         this._root = new DOMNode('root');
@@ -20,6 +20,9 @@ export class State {
     }
 
     pop() {
+        if (this._active === this._root) {
+            throw new Error('Cannot pop root state.');
+        }
         this._active = this._active?.getParent() || null;
     }
 
@@ -34,6 +37,10 @@ export class State {
     static set(state: State) {
         this._singleton._root = state._root;
         this._singleton._active = state._active;
+    }
+
+    static reset() {
+        this._singleton = new State();
     }
 
 }

@@ -1,16 +1,14 @@
-import { APIAcceptedType, APIAcceptedTypeContainer } from "../api";
+import { APIAcceptedTypes } from "../api";
 import { APIBehaviorOnAccept, FieldAPIInfo, FieldRegistry } from "./fields";
 
 const platformApiInfo: FieldAPIInfo = {
     name: 'platforms',
-    accepts: {
-        container: APIAcceptedTypeContainer.Set,
-        type: APIAcceptedType.String
-    },
+    accepts: APIAcceptedTypes.Set(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
-    allowedInScopes: ['workspace', 'project'],
+    allowedInScopes: ['workspace'],
     acceptedArguments: [],
-    acceptBehavior: APIBehaviorOnAccept.Merge
+    acceptBehavior: APIBehaviorOnAccept.Merge,
+    inherited: true
 };
 
-FieldRegistry.register(platformApiInfo);
+FieldRegistry.get().register(platformApiInfo);

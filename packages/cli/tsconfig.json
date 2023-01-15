@@ -7,6 +7,12 @@
   "references": [
     {
       "path": "../core"
+    },
+    {
+      "path": "../modules/exporters/vstudio"
+    },
+    {
+      "path": "../modules/toolsets/msc"
     }
   ]
 }
