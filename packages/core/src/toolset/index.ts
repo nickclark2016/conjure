@@ -1,3 +1,5 @@
+import { FieldRegistry } from "../fields";
+
 export interface Toolset {
     name: string;
     supportedLanguages: string[];
@@ -29,6 +31,7 @@ export class ToolsetRegistry {
 
     register(toolset: Toolset) {
         if (this._toolsets.has(toolset.name)) {
+            FieldRegistry.get().fetch('language')?.addAcceptedArguments(...toolset.supportedLanguages);
             throw new Error(`Toolset with name ${toolset.name} already exists.`);
         }
         this._toolsets.set(toolset.name, toolset);

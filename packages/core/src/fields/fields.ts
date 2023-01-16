@@ -46,7 +46,9 @@ export class FieldAPI {
     }
 
     addAcceptedArguments(...args: string[] | boolean[]): void {
-        this._info.acceptedArguments.push(...args);
+        const updated = new Set(this._info.acceptedArguments);
+        args.forEach(arg => updated.add(arg));
+        this._info.acceptedArguments = Array.from(updated);
     }
 }
 

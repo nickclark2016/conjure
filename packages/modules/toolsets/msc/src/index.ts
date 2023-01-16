@@ -1,4 +1,4 @@
-import { CppToolset, FieldRegistry, ToolsetRegistry } from "@premake-core/core";
+import { CppToolset, ToolsetRegistry } from "@premake-core/core";
 
 const mscToolset: CppToolset = {
     includes: function (directory: string): string {
@@ -33,8 +33,3 @@ const mscToolset: CppToolset = {
 };
 
 ToolsetRegistry.get().register(mscToolset);
-
-const languages = FieldRegistry.get().fetch("language");
-if (languages) {
-    languages.addAcceptedArguments("C#");
-}
