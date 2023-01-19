@@ -6,7 +6,11 @@
   "scripts": {
     "build": "compile",
     "begin": "node build/index.js",
-    "pkg": "pkg ./build/index.js -c package.json"
+    "pkg-windows-x64": "pkg ./build/index.js -c package.json -t node16-win-x64 -o bin/premake",
+    "pkg-linux-x64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/premake",
+    "pkg-linux-arm64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/premake",
+    "pkg-macos-x64": "pkg ./build/index.js -c package.json -t node16-macos-x64 -o bin/premake",
+    "pkg-macos-arm64": "pkg ./build/index.js -c package.json -t node16-macos-arm64 -o bin/premake"
   },
   "private": "true",
   "keywords": [],
@@ -23,12 +27,6 @@
     "typescript": "^4.9.4"
   },
   "pkg": {
-    "scripts": "build/**.js",
-    "targets": [
-      "node16-win-x64",
-      "node16-linux-x64",
-      "node16-macos-x64"
-    ],
-    "outputPath": "bin"
+    "scripts": "build/**.js"
   }
 }

@@ -1,0 +1,51 @@
+name: Premake CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+      
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Up NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run compile
+      - run: npm run pkg-linux-x64 -w @premake-core/cli
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: premake-linux-x64
+          path: packages/cli/bin/
+  windows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+      
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set Up NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run compile
+      - run: npm run pkg-windows-x64 -w @premake-core/cli
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: premake-windows-x64
+          path: packages/cli/bin/
