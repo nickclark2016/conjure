@@ -18,9 +18,10 @@
   "license": "ISC",
   "dependencies": {
     "@premake-core/core": "^1.0.0",
-    "@premake-core/vstudio": "^1.0.0",
     "@premake-core/msc": "^1.0.0",
-    "@types/node": "^18.11.18"
+    "@premake-core/vstudio": "^1.0.0",
+    "@types/node": "^18.11.18",
+    "cmd-ts": "^0.12.0"
   },
   "devDependencies": {
     "pkg": "^5.8.0",
