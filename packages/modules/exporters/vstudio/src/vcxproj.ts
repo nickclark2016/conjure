@@ -38,6 +38,8 @@ const itemTypeExtensionMap: any = {
         '.c',
         '.cpp',
         '.cxx',
+        '.cppm',
+        '.ixx'
     ]
 };
 
