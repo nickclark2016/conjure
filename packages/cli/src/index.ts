@@ -20,12 +20,14 @@ const app = command({
         scriptPath: option({
             type: File,
             long: 'script-path',
-            short: 's'
+            short: 's',
+            description: 'Path from the current working directory to the Premake script to execute',
+            defaultValue: () => './premake6.js'
         })
     },
     handler: ({ exporterName, scriptPath }) => {
         // Execute the premake configuration script
-        const filepath = scriptPath || './premake6.js';
+        const filepath = scriptPath;
         include(filepath);
 
         // Validate the exporter chosen.  This must be done after loading the configuration script in case
@@ -45,6 +47,7 @@ const app = command({
             version: "2022"
         });
     },
+    version: '1.0.0'
 });
 
 run(app, process.argv.slice(2));
