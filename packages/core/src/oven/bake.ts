@@ -42,8 +42,8 @@ function bakeInheritedProperties(node: DOMNode) {
     });
 }
 
-function cartesianProduct(sets: string[][]): string[][] {
-    return sets.reduce<string[][]>(
+function cartesianProduct<Type>(sets: Type[][]): Type[][] {
+    return sets.reduce<Type[][]>(
         (results, ids) =>
             results
                 .map(result => ids.map(id => [...result, id]))
@@ -133,19 +133,37 @@ function bakeProject(prj: DOMNode) {
     bakeConfigurationTuples(prj);
 }
 
-function fetchAllNodes(node: DOMNode): DOMNode[] {
-    const nodes: DOMNode[] = [];
+/**
+ * Merges children group nodes with the same name into a single group node.
+ * 
+ * @param wksOrGrp DOM Node to perform grouping operation on
+ * @pre wksOrGrp is a group or workspace node
+ */
+function mergeGroups(wksOrGrp: DOMNode) {
+    const childGroups = wksOrGrp.getChildren().filter((n) => {
+        return n.apiName === 'group';
+    });
 
-    const queue = [node];
-    while (queue.length > 0) {
-        const it = queue.shift();
-        if (it) {
-            it.getChildren().forEach((n) => queue.push(n));
-            nodes.push(it);
+    // bucket the groups into a map
+    const childGroupMap: Map<string, Array<DOMNode>> = new Map();
+    childGroups.forEach((child) => {
+        if (!childGroupMap.has(child.getName())) {
+            childGroupMap.set(child.getName(), []);
         }
-    }
+        childGroupMap.get(child.getName())?.push(child);
+    });
 
-    return nodes;
+    // Merge groups with same name. Remove groups, merge children into common node, add back common node
+    childGroupMap.forEach((nodes, name) => {
+        if (nodes.length >= 2) {
+            const newGroup = new DOMNode(name);
+            nodes.flatMap((node) => node.getChildren()).forEach((n) => {
+                wksOrGrp.removeChild(n);
+                newGroup.addChild(n);
+            });
+            wksOrGrp.addChild(newGroup);
+        }
+    });
 }
 
 export function bake(state: State) {
@@ -154,7 +172,8 @@ export function bake(state: State) {
         throw new Error(`No root node found in state.`);
     }
 
-    const nodes = fetchAllNodes(root);
+    const nodes = root.getAllNodes();
+    
     nodes.forEach((n) => {
         switch (n.apiName) {
             case 'workspace': {
@@ -171,4 +190,14 @@ export function bake(state: State) {
             }
         }
     });
+
+    nodes.forEach((n) => {
+        switch (n.apiName) {
+            case 'workspace':
+            case 'group': {
+                mergeGroups(n);
+                break;
+            }
+        }
+    })
 }
