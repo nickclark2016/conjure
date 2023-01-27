@@ -5,10 +5,11 @@ const symbolsApiInfo: FieldAPIInfo = {
     name: 'symbols',
     accepts: APIAcceptedTypes.String,
     expectedArgumentCount: 1,
-    allowedInScopes: ['project', 'when'],
+    allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [ 'On', 'Off' ],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: true
+    inherited: true,
+    isFiles: false
 };
 
 FieldRegistry.get().register(symbolsApiInfo);

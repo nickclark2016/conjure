@@ -5,10 +5,11 @@ const definesApiInfo: FieldAPIInfo = {
     name: 'defines',
     accepts: APIAcceptedTypes.Set(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
-    allowedInScopes: ['project', 'when'],
+    allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
-    inherited: true
+    inherited: true,
+    isFiles: false
 };
 
 FieldRegistry.get().register(definesApiInfo);

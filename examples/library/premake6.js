@@ -14,5 +14,15 @@ group('group', (grp) => {
             symbols('Off');
             optimize('On');
         });
+
+        block('library:public', (ctx) => {
+            includeDirs([
+                './includes'
+            ]);
+        });
+
+        uses([
+            'library:public'
+        ]);
     });
 });

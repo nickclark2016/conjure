@@ -5,10 +5,11 @@ const optimizeApiInfo: FieldAPIInfo = {
     name: 'optimize',
     accepts: APIAcceptedTypes.String,
     expectedArgumentCount: 1,
-    allowedInScopes: ['project', 'when'],
+    allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [ 'Off', 'On', 'Size', 'Speed', 'Full' ],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: true
+    inherited: true,
+    isFiles: false
 };
 
 FieldRegistry.get().register(optimizeApiInfo);

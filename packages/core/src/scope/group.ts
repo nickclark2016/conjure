@@ -7,6 +7,7 @@ export interface GroupContext {
 const groupApiInfo: ScopeAPIInfo = {
     name: 'group',
     allowedInScopes: ['workspace'],
+    allowsInheritance: true,
     ctxAccumulator: (name: string) => {
         return {
             scope: 'group',

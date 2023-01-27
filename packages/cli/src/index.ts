@@ -26,26 +26,30 @@ const app = command({
         })
     },
     handler: ({ exporterName, scriptPath }) => {
-        // Execute the premake configuration script
-        const filepath = scriptPath;
-        include(filepath);
+        try {
+            // Execute the premake configuration script
+            const filepath = scriptPath;
+            include(filepath);
 
-        // Validate the exporter chosen.  This must be done after loading the configuration script in case
-        // the configuration script loads an exporter.
+            // Validate the exporter chosen.  This must be done after loading the configuration script in case
+            // the configuration script loads an exporter.
 
-        const exporter = ExporterRegistry.get().fetch(exporterName);
-        if (!exporter) {
-            throw new Error(`Could not find exporter with name ${exporterName}`);
+            const exporter = ExporterRegistry.get().fetch(exporterName);
+            if (!exporter) {
+                throw new Error(`Could not find exporter with name ${exporterName}`);
+            }
+
+            // Bake the configuration state into a format the exporters can use
+            bake(State.get());
+
+            // Use the selected exporter to write the state to file(s)
+            exporter.functor(State.get(), {
+                name: exporterName,
+                version: "2022"
+            });
+        } catch (err) {
+            console.log(err);
         }
-
-        // Bake the configuration state into a format the exporters can use
-        bake(State.get());
-
-        // Use the selected exporter to write the state to file(s)
-        exporter.functor(State.get(), {
-            name: exporterName,
-            version: "2022"
-        });
     },
     version: '1.0.0'
 });

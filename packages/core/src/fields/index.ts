@@ -17,3 +17,4 @@ export * from './targetdir';
 export * from './targetext';
 export * from './targetname';
 export * from './toolset';
+export * from './uses';

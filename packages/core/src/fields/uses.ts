@@ -1,15 +1,15 @@
 import { APIAcceptedTypes } from "../api";
 import { APIBehaviorOnAccept, FieldAPIInfo, FieldRegistry } from "./fields";
 
-const includesApiInfo: FieldAPIInfo = {
-    name: 'includeDirs',
+const usesApiInfo: FieldAPIInfo = {
+    name: 'uses',
     accepts: APIAcceptedTypes.Set(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
     allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
     inherited: true,
-    isFiles: true
+    isFiles: false
 };
 
-FieldRegistry.get().register(includesApiInfo);
+FieldRegistry.get().register(usesApiInfo);

@@ -78,7 +78,7 @@ export class APIAcceptedTypes {
                 if (!this.valid(incoming)) {
                     throw new Error(`Incoming type is not an array.`);
                 }
-                return [...existing, ...incoming];
+                return [...(existing || []), ...incoming];
             },
             replace: function (_existing: any, incoming: any) {
                 if (!this.valid(incoming)) {
@@ -87,7 +87,7 @@ export class APIAcceptedTypes {
                 return incoming;
             },
             remove: function (existing: any, incoming: any) {
-                return (existing as any[]).filter((value) => !(incoming as any[]).includes(value));
+                return ((existing || []) as any[]).filter((value) => !(incoming as any[]).includes(value));
             },
             valid: function (incoming: any): boolean {
                 return Array.isArray(incoming) && (incoming as any[]).reduce((accumulator, current) => {
@@ -103,7 +103,7 @@ export class APIAcceptedTypes {
                 if (!this.valid(incoming)) {
                     throw new Error(`Incoming type is not an array.`);
                 }
-                return Array.from(new Set([...existing, ...incoming]));
+                return Array.from(new Set([...(existing || []), ...incoming]));
             },
             replace: function (_existing: any, incoming: any) {
                 if (!this.valid(incoming)) {
@@ -112,7 +112,7 @@ export class APIAcceptedTypes {
                 return incoming;
             },
             remove: function (existing: any, incoming: any) {
-                return (existing as any[]).filter((value) => !(incoming as any[]).includes(value));
+                return ((existing || []) as any[]).filter((value) => !(incoming as any[]).includes(value));
             },
             valid: function (incoming: any): boolean {
                 return Array.isArray(incoming) && (incoming as any[]).length === (new Set(incoming)).size && (incoming as any[]).reduce((accumulator, current) => {

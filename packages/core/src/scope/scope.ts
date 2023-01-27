@@ -2,12 +2,14 @@ import { APIAcceptedTypes, APIRegistry } from "../api";
 import { DOMNode } from "../dom";
 import { includeFileStack } from "../include";
 import { State } from "../state";
+import { join } from "path";
 
 export type ScopeAPIContextAccumulator = (name: string) => any;
 
 export type ScopeAPIInfo = {
     name: string;
     allowedInScopes: string[],
+    allowsInheritance: boolean,
     ctxAccumulator: ScopeAPIContextAccumulator
 };
 
@@ -43,6 +45,9 @@ function buildFunctor(info: ScopeAPIInfo) {
         const node = new DOMNode(typeof label === 'string' ? label : JSON.stringify(label));
         node.apiName = info.name;
         node.scriptLocation = includeFileStack[includeFileStack.length - 1];
+        node.absoluteScriptLocation = join(process.cwd(), ...includeFileStack);
+        
+        node.allowsInheritance = info.allowsInheritance;
 
         State.get().push(node);
         const isValid = validate(State.get().peek());

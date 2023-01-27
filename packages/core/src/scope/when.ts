@@ -34,7 +34,7 @@ APIRegistry.get().register({
     name: 'when',
     accepts: APIAcceptedTypes.Function,
     expectedArgumentCount: 2,
-    allowedInScopes: ['project'],
+    allowedInScopes: ['project', 'block'],
     acceptedArguments: [],
     action: (test: FilterTest, callback: (c: FilterContext) => void) => {
         const node = State.get().peek();
@@ -43,7 +43,7 @@ APIRegistry.get().register({
             throw new Error(`DOM state null.`);
         }
 
-        const isValid = node.apiName === 'project';
+        const isValid = node.apiName === 'project' || node.apiName === 'block';
 
         if (!isValid) {
             throw new Error(`Scope API when not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);

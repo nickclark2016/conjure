@@ -5,10 +5,11 @@ const targetDirApiInfo: FieldAPIInfo = {
     name: 'targetDirectory',
     accepts: APIAcceptedTypes.String,
     expectedArgumentCount: 1,
-    allowedInScopes: ['project', 'when'],
+    allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: true
+    inherited: true,
+    isFiles: true
 };
 
 FieldRegistry.get().register(targetDirApiInfo);

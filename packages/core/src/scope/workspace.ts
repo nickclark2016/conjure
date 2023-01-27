@@ -7,6 +7,7 @@ export interface WorkspaceContext {
 const workspaceApiInfo: ScopeAPIInfo = {
     name: 'workspace',
     allowedInScopes: ['root'],
+    allowsInheritance: false,
     ctxAccumulator: (name: string) => {
         return {
             scope: 'workspace',

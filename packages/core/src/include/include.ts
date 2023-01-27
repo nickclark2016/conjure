@@ -66,8 +66,8 @@ class Environment {
         const script = new Script(fullSource);
         try {
             script.runInContext(this._context);
-        } catch (err) {
-            console.error(err);
+        } catch (err: any) {
+            console.error(err.message);
         }
     }
 

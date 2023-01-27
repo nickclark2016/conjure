@@ -5,10 +5,11 @@ const kindApiInfo: FieldAPIInfo = {
     name: 'kind',
     accepts: APIAcceptedTypes.String,
     expectedArgumentCount: 1,
-    allowedInScopes: ['project', 'when'],
+    allowedInScopes: ['project', 'when', 'block'],
     acceptedArguments: [ 'ConsoleApp', 'StaticLib', 'SharedLib' ],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: true
+    inherited: true,
+    isFiles: false
 };
 
 FieldRegistry.get().register(kindApiInfo);

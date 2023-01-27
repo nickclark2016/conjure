@@ -1,22 +1,26 @@
 import { DOMNode } from "../dom";
 import { APIBehaviorOnAccept, FieldRegistry } from "../fields";
 import { glob } from "glob";
-import { join, normalize } from "path";
+import { join, normalize, relative } from "path";
 import { State } from "../state";
 import { Filter, filterMatch } from "../scope";
 
-function bakeLocation(wks: DOMNode) {
-    const scriptLocation = wks.scriptLocation;
+function bakeLocation(node: DOMNode) {
+    const scriptLocation = node.scriptLocation;
     const scriptDirectory = scriptLocation;
     const location = scriptDirectory;
-    if (wks.location) {
-        wks.location = normalize(join(location, wks.location));
+    if (node.location) {
+        node.location = normalize(join(location, node.location));
     } else {
-        wks.location = location;
+        node.location = location;
     }
 }
 
 function bakeInheritedProperties(node: DOMNode) {
+    if (node.allowsInheritance !== true) {
+        return;
+    }
+
     const parentProperties = node.getParent();
     if (parentProperties === null) {
         throw new Error(`Cannot bake properties from parentless node.`);
@@ -80,6 +84,7 @@ function bakeConfigurationTuples(prj: DOMNode) {
         node.apiName = 'when';
         node.configuration = configuration;
         node.platform = platform;
+        node.allowsInheritance = true;
 
         return node;
     };
@@ -113,6 +118,77 @@ function bakeConfigurationTuples(prj: DOMNode) {
         // bakeLocation(node);
         bakeInheritedProperties(node);
         // bakeFiles(node);
+    });
+}
+
+function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
+    const mapping = new Map(blocks.map((blk) => [blk.getName(), blk]));
+    
+    // gather all the transient dependencies
+    const deps: string[] = [];
+    const queue = new Array(...(node.uses || []));
+    while (queue.length > 0) {
+        const blockName = queue.shift();
+        if (blockName) {
+            const block = mapping.get(blockName);
+            if (!block) {
+                throw new Error(`Failed to find block with name ${block}.`);
+            }
+            queue.push(...(block.uses || []));
+            deps.push(blockName);
+        }
+    }
+
+    const depBlocks = deps.map((dep) => {
+        const block = mapping.get(dep);
+        if (block) {
+            return block;
+        }
+        // Should never be reached
+        throw new Error(`Failed to find block with name ${block}.`);
+    });
+
+    // Apply blocks to original node
+    depBlocks.forEach((block) => {
+        const sharedFields = Object.entries(block).map(([name, value]: [string, any]) => {
+            return {
+                name: name,
+                field: FieldRegistry.get().fetch(name),
+                value: value
+            };
+        }).filter((obj) => obj.field !== null);
+
+        sharedFields.forEach(({ name, field, value }) => {
+            if (field) {
+                const val = field.isFileField() ? (() => {
+                    if (Symbol.iterator in Object(value)) {
+                        return (value as string[]).map((path) => {
+                            const absolutePath = join(block.absoluteScriptLocation, path);
+                            const pathToHere = node.absoluteScriptLocation;
+                            const relativeToPath = relative(pathToHere, absolutePath);
+                            return relativeToPath;
+                        });
+                    } else {
+                        const absolutePath = join(block.absoluteScriptLocation, value);
+                        const pathToHere = node.absoluteScriptLocation;
+                        const relativeToPath = relative(pathToHere, absolutePath);
+                        return relativeToPath;
+                    }
+                })() : value;
+
+                switch (field.behaviorOnAccept()) {
+                    case APIBehaviorOnAccept.Merge:
+                        node[name] = field.acceptedTypes().merge(node[name], val);
+                        break;
+                    case APIBehaviorOnAccept.Replace:
+                        node[name] = field.acceptedTypes().replace(node[name], val);
+                        break;
+                    case APIBehaviorOnAccept.Remove:
+                        node[name] = field.acceptedTypes().remove(node[name], val);
+                        break;
+                }
+            }
+        });
     });
 }
 
@@ -173,6 +249,8 @@ export function bake(state: State) {
     }
 
     const nodes = root.getAllNodes();
+    const blocks = nodes.filter((node) => node.apiName === 'block');
+    nodes.forEach((node) => applyBlocks(node, blocks));
     
     nodes.forEach((n) => {
         switch (n.apiName) {

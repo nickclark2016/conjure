@@ -8,7 +8,8 @@ const configurationsApiInfo: FieldAPIInfo = {
     allowedInScopes: ['workspace'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
-    inherited: true
+    inherited: true,
+    isFiles: false
 };
 
 FieldRegistry.get().register(configurationsApiInfo);

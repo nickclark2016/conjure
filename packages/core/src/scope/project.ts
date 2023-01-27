@@ -7,6 +7,7 @@ export interface ProjectContext {
 const projectApiInfo: ScopeAPIInfo = {
     name: 'project',
     allowedInScopes: ['workspace', 'group'],
+    allowsInheritance: true,
     ctxAccumulator: (name: string) => {
         return {
             scope: 'project',

@@ -15,4 +15,6 @@ project('executable', (prj) => {
         symbols('Off');
         optimize('On');
     });
+
+    uses([ 'library:public' ]);
 });

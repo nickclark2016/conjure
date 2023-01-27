@@ -16,6 +16,7 @@ export type FieldAPIInfo = {
     acceptedArguments: any[];
     acceptBehavior: APIBehaviorOnAccept;
     inherited: boolean;
+    isFiles: boolean;
 }
 
 export class FieldAPI {
@@ -49,6 +50,10 @@ export class FieldAPI {
         const updated = new Set(this._info.acceptedArguments);
         args.forEach(arg => updated.add(arg));
         this._info.acceptedArguments = Array.from(updated);
+    }
+
+    isFileField(): boolean {
+        return this._info.isFiles;
     }
 }
 
