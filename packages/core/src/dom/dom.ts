@@ -6,6 +6,10 @@ export class DOMNode {
     constructor(name: string, parent: DOMNode | null = null) {
         this._name = name;
         this._parent = parent;
+        
+        if (parent) {
+            parent.addChild(this);
+        }
     }
 
     addChild(node: DOMNode) {
