@@ -17,6 +17,7 @@ export type FieldAPIInfo = {
     acceptBehavior: APIBehaviorOnAccept;
     inherited: boolean;
     isFiles: boolean;
+    default?: any;
 }
 
 export class FieldAPI {
@@ -54,6 +55,10 @@ export class FieldAPI {
 
     isFileField(): boolean {
         return this._info.isFiles;
+    }
+
+    defaultValue(): any {
+        return this._info.default;
     }
 }
 
@@ -116,5 +121,9 @@ export class FieldRegistry {
 
     remove(name: string): boolean {
         return this._apis.delete(name);
+    }
+
+    all(): ReadonlyArray<FieldAPI> {
+        return Array.from(this._apis.values());
     }
 }

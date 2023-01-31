@@ -56,6 +56,15 @@ function cartesianProduct<Type>(sets: Type[][]): Type[][] {
     );
 }
 
+function bakeDefaults(node: DOMNode) {
+    FieldRegistry.get().all().filter(api => api.allowedIn().includes(node.apiName)).forEach(api => {
+        const defaultValue = api.defaultValue()
+        if (defaultValue && node[api.name()] === undefined) {
+            node[api.name()] = defaultValue;
+        }
+    });
+}
+
 function bakeFiles(node: DOMNode) {
     const filePatterns: string[] = node.files || [];
     const filesFound: string[] = [];
@@ -250,7 +259,9 @@ export function bake(state: State) {
 
     const nodes = root.getAllNodes();
     const blocks = nodes.filter((node) => node.apiName === 'block');
+
     nodes.forEach((node) => applyBlocks(node, blocks));
+    nodes.forEach((node) => bakeDefaults(node));
     
     nodes.forEach((n) => {
         switch (n.apiName) {
