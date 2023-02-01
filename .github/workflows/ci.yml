@@ -51,7 +51,7 @@ jobs:
       - name: Run Tests
         run: npm run test --workspaces --if-present -- --passWithNoTests
       - name: Package Executable
-        run: npm run test --workspaces --if-present -- --passWithNoTests
+        run: npm run pkg-windows-x64 -w @premake-core/cli
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
