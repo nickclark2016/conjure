@@ -17,8 +17,7 @@ const mscToolset: CppToolset = {
         return `/LIBPATH ${path}`;
     },
     name: "msc",
-    supportedLanguages: ["C", "C++"],
-    supportedLanguageVersions: new Map(Object.entries({
+    supportedLanguages: new Map(Object.entries({
         "C": ["C11", "C17"],
         "C++": ["C++14", "C++17", "C++20", "C++Latest"],
     })),

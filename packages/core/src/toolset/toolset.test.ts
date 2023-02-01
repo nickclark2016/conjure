@@ -8,8 +8,7 @@ describe('Toolset Registry Tests', () => {
     test('Register Toolset', () => {
         const ts: Toolset = {
             name: "test_toolset",
-            supportedLanguages: ["C++"],
-            supportedLanguageVersions: new Map(),
+            supportedLanguages: new Map(),
             toolname: function (_type: string, _language: string): string {
                 throw new Error("Function not implemented.");
             }
@@ -24,8 +23,7 @@ describe('Toolset Registry Tests', () => {
     test('Remove Toolset', () => {
         const ts: Toolset = {
             name: "test_toolset",
-            supportedLanguages: ["C++"],
-            supportedLanguageVersions: new Map(),
+            supportedLanguages: new Map(),
             toolname: function (_type: string, _language: string): string {
                 throw new Error("Function not implemented.");
             }
