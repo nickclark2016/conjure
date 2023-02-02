@@ -36,6 +36,7 @@ const itemTypeExtensionMap: any = {
     ],
     'ClCompile': [
         '.c',
+        '.cc',
         '.cpp',
         '.cxx',
         '.cppm',
