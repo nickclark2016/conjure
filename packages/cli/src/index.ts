@@ -8,6 +8,7 @@ import { string } from "cmd-ts/dist/cjs/types";
 
 // Load all the core modules
 require("@premake-core/vstudio");
+require("@premake-core/clang");
 require("@premake-core/msc");
 
 const app = command({

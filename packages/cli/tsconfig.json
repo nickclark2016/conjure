@@ -12,6 +12,9 @@
       "path": "../modules/exporters/vstudio"
     },
     {
+      "path": "../modules/toolsets/clang"
+    },
+    {
       "path": "../modules/toolsets/msc"
     }
   ]
