@@ -3,7 +3,7 @@ group('group', (grp) => {
         language('C++');
         toolset('msc:143');
         kind('StaticLib');
-        files([ '**.cpp', '**.ixx' ]);
+        files([ '*/**.hpp', '*/**.cpp', '*/**.ixx' ]);
 
         when({ configuration: 'Debug' }, (ctx) => {
             symbols('On');

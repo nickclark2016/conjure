@@ -1,4 +1,4 @@
-extern void hello_world();
+#include <lib.hpp>
 
 import library;
 

@@ -9,4 +9,5 @@ node_modules/**
 **Makefile
 
 **/bin
+**/bin-int
 **/obj
