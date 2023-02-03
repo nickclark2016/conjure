@@ -1,5 +1,5 @@
 import { DOMNode } from "../dom";
-import { APIBehaviorOnAccept, FieldRegistry } from "../fields";
+import { APIBehaviorOnAccept, FieldAPI, FieldRegistry } from "../fields";
 import { glob } from "glob";
 import { join, normalize, relative } from "path";
 import { State } from "../state";
@@ -78,12 +78,28 @@ function bakeFiles(node: DOMNode) {
     node.inputFiles = filesFound;
 }
 
-function bakeConfigurationTuples(prj: DOMNode) {
-    const configurations: string[] | undefined = prj.configurations;
-    const platforms: string[] | undefined = prj.platforms;
+function normalizeFileFields(node: DOMNode) {
+    FieldRegistry.get().all().filter(field => field.isFileField()).forEach(field => {
+        const name = field.name();
+        const contents = node[name];
+        if (contents) {
+            if (Array.isArray(contents)) {
+                node[name] = contents.map(file => normalize(file));
+            } else if (typeof contents === 'string') {
+                node[name] = normalize(contents);
+            } else {
+                throw new Error(`Unknown field type.`);
+            }
+        }
+    })
+}
+
+function bakeConfigurationTuples(parent: DOMNode) {
+    const configurations: string[] | undefined = parent.configurations;
+    const platforms: string[] | undefined = parent.platforms;
 
     if (!configurations || !platforms) {
-        throw new Error(`Failed to find configurations and/or platforms for project ${prj.getName()}.`);
+        throw new Error(`Failed to find configurations and/or platforms for project ${parent.getName()}.`);
     }
 
     const cartesian = cartesianProduct([configurations, platforms]);
@@ -100,19 +116,25 @@ function bakeConfigurationTuples(prj: DOMNode) {
 
     cartesian.forEach(([configuration, platform]: string[]) => {
         const node = createNode(configuration, platform);
-        
-        prj.addChild(node);
-        const filters: Filter[] = prj.filters || [];
+
+        parent.addChild(node);
+        const filters: Filter[] = parent.filters || [];
+
         filters.filter((filter: Filter) => {
             return filterMatch(filter, {
                 platform,
                 configuration
             });
         }).forEach((filter: Filter) => {
+            const old = State.get().activate(node);
+
             filter.callback({
                 platform,
-                configuration
+                configuration,
+                pathToWorkspace: filter.pathToWorkspace
             });
+
+            State.get().activate(old);
 
             const rt = node.runtime;
             if (!rt) {
@@ -126,13 +148,14 @@ function bakeConfigurationTuples(prj: DOMNode) {
 
         // bakeLocation(node);
         bakeInheritedProperties(node);
-        // bakeFiles(node);
+        bakeFiles(node);
+        normalizeFileFields(node);
     });
 }
 
 function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
     const mapping = new Map(blocks.map((blk) => [blk.getName(), blk]));
-    
+
     // gather all the transient dependencies
     const deps: string[] = [];
     const queue = new Array(...(node.uses || []));
@@ -262,7 +285,7 @@ export function bake(state: State) {
 
     nodes.forEach((node) => applyBlocks(node, blocks));
     nodes.forEach((node) => bakeDefaults(node));
-    
+
     nodes.forEach((n) => {
         switch (n.apiName) {
             case 'workspace': {
@@ -288,5 +311,7 @@ export function bake(state: State) {
                 break;
             }
         }
-    })
+    });
+
+    nodes.forEach((n) => normalizeFileFields(n));
 }

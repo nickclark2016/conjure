@@ -2,7 +2,7 @@ import { APIAcceptedTypes, APIRegistry } from "../api";
 import { DOMNode } from "../dom";
 import { includeFileStack } from "../include";
 import { State } from "../state";
-import { join } from "path";
+import { join, relative } from "path";
 
 export type ScopeAPIContextAccumulator = (name: string) => any;
 
@@ -40,6 +40,17 @@ export function validate(self: DOMNode | null): boolean {
 }
 
 function buildFunctor(info: ScopeAPIInfo) {
+    const extractWorkspaceParent = function(node: DOMNode) {
+        let it: DOMNode | null = node;
+        while (it && it.apiName !== 'workspace') {
+            it = it.getParent();
+        }
+        if (it) {
+            return it;
+        }
+        throw new Error(`Failed to get workspace owning node ${node.getName()}.`);
+    }
+
     const fn = function(label: any, callback: any) {
         const ctx = info.ctxAccumulator(label);
         const node = new DOMNode(typeof label === 'string' ? label : JSON.stringify(label));
@@ -50,12 +61,20 @@ function buildFunctor(info: ScopeAPIInfo) {
         node.allowsInheritance = info.allowsInheritance;
 
         State.get().push(node);
+
+        const wks = extractWorkspaceParent(node);
+        const wksPath = wks.absoluteScriptLocation;
+        let pathToWks = relative(node.absoluteScriptLocation, wksPath);
+        if (pathToWks.length === 0) {
+            pathToWks = '.';
+        }
+
         const isValid = validate(State.get().peek());
         if (!isValid) {
             throw new Error(`Scope API ${info.name} not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);
         }
 
-        callback(ctx);
+        callback({ ...ctx, pathToWorkspace: pathToWks });
 
         State.get().pop();
     }

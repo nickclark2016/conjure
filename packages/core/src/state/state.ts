@@ -30,6 +30,12 @@ export class State {
         return this._active;
     }
 
+    activate(node: DOMNode | null): DOMNode | null {
+        const prev = this._active;
+        this._active = node;
+        return prev;
+    }
+
     static get() {
         return this._singleton;
     }

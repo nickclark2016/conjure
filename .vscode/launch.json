@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Visual Studio Example",
+            "name": "Premake Example Project",
             "skipFiles": [
                 "<node_internals>/**"
             ],
