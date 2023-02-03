@@ -39,35 +39,38 @@ export function validate(self: DOMNode | null): boolean {
     return false;
 }
 
-function buildFunctor(info: ScopeAPIInfo) {
-    const extractWorkspaceParent = function(node: DOMNode) {
-        let it: DOMNode | null = node;
-        while (it && it.apiName !== 'workspace') {
-            it = it.getParent();
-        }
-        if (it) {
-            return it;
-        }
+export function pathToWorkspace(node: DOMNode): string {
+    let it: DOMNode | null = node;
+    while (it && it.apiName !== 'workspace') {
+        it = it.getParent();
+    }
+    if (!it) {
         throw new Error(`Failed to get workspace owning node ${node.getName()}.`);
     }
+    
+    const myPath = node.absoluteScriptLocation;
+    const wksPath = it.absoluteScriptLocation;
+    const path = relative(myPath, wksPath);
+    if (path === "") {
+        return ".";
+    }
+    return path;
+}
 
+function buildFunctor(info: ScopeAPIInfo) {
     const fn = function(label: any, callback: any) {
         const ctx = info.ctxAccumulator(label);
         const node = new DOMNode(typeof label === 'string' ? label : JSON.stringify(label));
+        const location = includeFileStack[includeFileStack.length - 1];
         node.apiName = info.name;
-        node.scriptLocation = includeFileStack[includeFileStack.length - 1];
-        node.absoluteScriptLocation = join(process.cwd(), ...includeFileStack);
+        node.scriptLocation = location;
+        node.absoluteScriptLocation = location;
         
         node.allowsInheritance = info.allowsInheritance;
 
         State.get().push(node);
 
-        const wks = extractWorkspaceParent(node);
-        const wksPath = wks.absoluteScriptLocation;
-        let pathToWks = relative(node.absoluteScriptLocation, wksPath);
-        if (pathToWks.length === 0) {
-            pathToWks = '.';
-        }
+        const pathToWks = pathToWorkspace(node);
 
         const isValid = validate(State.get().peek());
         if (!isValid) {

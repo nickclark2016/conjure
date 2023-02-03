@@ -244,14 +244,29 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
 
 function writeFiles(prj: DOMNode, writer: XmlWriter) {
     writer.writeNode("ItemGroup", {}, (writer) => {
-        const includes = prj.inputFiles.filter((file: string) => {
-            const extension = extname(file);
-            return itemTypeExtensionMap.ClInclude.includes(extension);
-        });
-        includes.forEach((file: string) => {
-            writer.writeContentNode("ClInclude", {
-                Include: file
+        const includes = new Set(prj.getAllNodes().flatMap(node => {
+            return (node.inputFiles || []).filter((file: string) => {
+                const extension = extname(file);
+                return itemTypeExtensionMap.ClInclude.includes(extension);
             });
+        }));
+        includes.forEach((file: string) => {
+            const filters = prj.getChildren().filter(child => child.apiName === 'when');
+            const filtersWithoutChild = filters.filter(child => !child.inputFiles.includes(file));
+            if (filtersWithoutChild.length === filters.length) {
+                writer.writeContentNode("ClInclude", {
+                    Include: file
+                });
+            } else {
+                writer.writeNode("ClInclude", {Include: file}, (writer) => {
+                    // <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+                    filtersWithoutChild.forEach((filter) => {
+                        writer.writeContentNode("ExcludedFromBuild", {
+                            Condition: `'$(Configuration)|$(Platform)' == ${filter.configuration}|${filter.platform}`
+                        }, "true")
+                    });
+                });
+            }
         });
     });
 

@@ -1,5 +1,6 @@
 import { DOMNode } from "../dom";
-import { APIBehaviorOnAccept, FieldAPI, FieldRegistry } from "../fields";
+import { APIBehaviorOnAccept, FieldRegistry } from "../fields";
+import { existsSync } from "fs";
 import { glob } from "glob";
 import { join, normalize, relative } from "path";
 import { State } from "../state";
@@ -14,6 +15,7 @@ function bakeLocation(node: DOMNode) {
     } else {
         node.location = location;
     }
+    node.__locationBaked = true;
 }
 
 function bakeInheritedProperties(node: DOMNode) {
@@ -70,10 +72,14 @@ function bakeFiles(node: DOMNode) {
     const filesFound: string[] = [];
 
     filePatterns.forEach((pattern) => {
-        const matches = glob.sync(pattern, { cwd: node.location }).map((file) => {
-            return normalize(file);
-        });
-        filesFound.push(...matches);
+        if (existsSync(join(node.location, pattern))) {
+            filesFound.push(normalize(pattern));
+        } else {
+            const matches = glob.sync(pattern, { cwd: node.location }).map((file) => {
+                return normalize(file);
+            });
+            filesFound.push(...matches);
+        }
     });
     node.inputFiles = filesFound;
 }
@@ -118,6 +124,7 @@ function bakeConfigurationTuples(parent: DOMNode) {
         const node = createNode(configuration, platform);
 
         parent.addChild(node);
+
         const filters: Filter[] = parent.filters || [];
 
         filters.filter((filter: Filter) => {
@@ -126,7 +133,8 @@ function bakeConfigurationTuples(parent: DOMNode) {
                 configuration
             });
         }).forEach((filter: Filter) => {
-            const old = State.get().activate(node);
+            const tmp = new DOMNode("temp", parent);
+            const old = State.get().activate(tmp);
 
             filter.callback({
                 platform,
@@ -134,7 +142,45 @@ function bakeConfigurationTuples(parent: DOMNode) {
                 pathToWorkspace: filter.pathToWorkspace
             });
 
+            node.scriptLocation = filter.scriptLocation;
+            if (!node.__locationBaked) {
+                bakeLocation(node);
+            }
+
             State.get().activate(old);
+            parent.removeChild(tmp);
+
+            FieldRegistry.get().all().filter(field => {
+                const value = tmp[field.name()];
+                if (value) {
+                    if (field.isFileField()) {
+                        const pathToFilterNode = relative(parent.absoluteScriptLocation, filter.absoluteScriptPath);
+                        if (Array.isArray(value)) {
+                            tmp[field.name()] = value.map((v) => join(pathToFilterNode, v));
+                        } else if (typeof value === 'string') {
+                            tmp[field.name()] = join(pathToFilterNode, value);
+                        }
+                    }
+
+                    const behavior = field.behaviorOnAccept();
+
+                    const combined = (() => {
+                        switch (behavior) {
+                            case APIBehaviorOnAccept.Merge: {
+                                return field.acceptedTypes().merge(node[field.name()], tmp[field.name()]);
+                            }
+                            case APIBehaviorOnAccept.Remove:  {
+                                return field.acceptedTypes().remove(node[field.name()], tmp[field.name()]);
+                            }
+                            case APIBehaviorOnAccept.Replace: {
+                                return field.acceptedTypes().replace(node[field.name()], tmp[field.name()]);
+                            }
+                        }
+                    })();
+
+                    node[field.name()] = combined;
+                }
+            });
 
             const rt = node.runtime;
             if (!rt) {
@@ -146,7 +192,6 @@ function bakeConfigurationTuples(parent: DOMNode) {
             }
         });
 
-        // bakeLocation(node);
         bakeInheritedProperties(node);
         bakeFiles(node);
         normalizeFileFields(node);
@@ -221,6 +266,19 @@ function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
                 }
             }
         });
+
+        const filters: Filter[] = block.filters || [];
+        const existingFilters: Filter[] = node.filters || [];
+        filters.forEach(filter => {
+            existingFilters.push({
+                test: filter.test,
+                callback: filter.callback,
+                scriptLocation: relative(node.absoluteScriptLocation, filter.absoluteScriptPath),
+                absoluteScriptPath: filter.absoluteScriptPath,
+                pathToWorkspace: join(relative(filter.absoluteScriptPath, node.absoluteScriptLocation), filter.pathToWorkspace)
+            });
+        });
+        node.filters = existingFilters;
     });
 }
 

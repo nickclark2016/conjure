@@ -25,6 +25,10 @@ group('group', (grp) => {
             includeDirs([
                 './includes'
             ]);
+
+            when({ configuration: 'Release' }, (ctx) => {
+                files([ './includes/dummy.h' ]);
+            });
         });
 
         uses([

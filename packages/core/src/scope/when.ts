@@ -5,6 +5,7 @@ import { createMatcher } from "./parser/matcher";
 import { ExpressionParser, FormulaLexer } from "./parser";
 import { DOMNode } from "../dom";
 import { join, relative } from "path";
+import { pathToWorkspace } from "./scope";
 
 export interface FilterTest {
     platform: string;
@@ -50,17 +51,6 @@ export function filterMatch(filter: Filter, incoming: FilterTest) {
 }
 
 function buildFunctor() {
-    const extractWorkspaceParent = function(node: DOMNode) {
-        let it: DOMNode | null = node;
-        while (it && it.apiName !== 'workspace') {
-            it = it.getParent();
-        }
-        if (it) {
-            return it;
-        }
-        throw new Error(`Failed to get workspace owning node ${node.getName()}.`);
-    }
-
     const fn = function(test: FilterTest, callback: (c: FilterContext) => void) {
         const node = State.get().peek();
 
@@ -74,20 +64,18 @@ function buildFunctor() {
             throw new Error(`Scope API when not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);
         }
 
-        const wks = extractWorkspaceParent(node);
-        const wksPath = wks.absoluteScriptLocation;
-        let pathToWks = relative(node.absoluteScriptLocation, wksPath);
-        if (pathToWks.length === 0) {
-            pathToWks = '.';
-        }
+        const pathToWks = pathToWorkspace(node);
         
+        const location = includeFileStack[includeFileStack.length - 1];
         const filter: Filter = {
             test,
             callback,
-            scriptLocation: includeFileStack[includeFileStack.length - 1],
-            absoluteScriptPath: join(process.cwd(), ...includeFileStack),
+            scriptLocation: location,
+            absoluteScriptPath: join(process.cwd(), location),
             pathToWorkspace: pathToWks
         };
+
+        console.log(...includeFileStack);
 
         const filters: Filter[] = node.filters || [];
         filters.push(filter);
