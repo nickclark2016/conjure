@@ -148,8 +148,8 @@ function writePropertySheets(prj: DOMNode, writer: XmlWriter) {
 function writePropertyLinkerConfiguration(prj: DOMNode, writer: XmlWriter) {
     prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
         const linkIncremental = node.configuration === 'Debug';
-        const intDir = node.intermediateDirectory || 'obj\\';
-        const binDir = node.targetDirectory || 'bin\\';
+        const intDir: string = node.intermediateDirectory || 'obj';
+        const binDir: string = node.targetDirectory || 'bin';
         const targetName = node.targetName || prj.getName();
         const targetExt = node.targetExt || targetExtensionMap[node.kind];
 
@@ -157,8 +157,8 @@ function writePropertyLinkerConfiguration(prj: DOMNode, writer: XmlWriter) {
             Condition: `'$(Configuration)|$(Platform)'=='${node.configuration}|${node.platform}'`
         }, (writer) => {
             writer.writeContentNode("LinkIncremental", {}, `${linkIncremental}`);
-            writer.writeContentNode("OutDir", {}, binDir);
-            writer.writeContentNode("IntDir", {}, intDir);
+            writer.writeContentNode("OutDir", {}, `${binDir}\\`);
+            writer.writeContentNode("IntDir", {}, `${intDir}\\`);
             writer.writeContentNode("TargetName", {}, targetName);
             writer.writeContentNode("TargetExt", {}, targetExt);
         });
