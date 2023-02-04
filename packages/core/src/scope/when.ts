@@ -75,8 +75,6 @@ function buildFunctor() {
             pathToWorkspace: pathToWks
         };
 
-        console.log(...includeFileStack);
-
         const filters: Filter[] = node.filters || [];
         filters.push(filter);
         node.filters = filters;

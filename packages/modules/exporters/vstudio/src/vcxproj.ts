@@ -262,7 +262,7 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
                     // <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
                     filtersWithoutChild.forEach((filter) => {
                         writer.writeContentNode("ExcludedFromBuild", {
-                            Condition: `'$(Configuration)|$(Platform)' == ${filter.configuration}|${filter.platform}`
+                            Condition: `'$(Configuration)|$(Platform)' == '${filter.configuration}|${filter.platform}'`
                         }, "true")
                     });
                 });
