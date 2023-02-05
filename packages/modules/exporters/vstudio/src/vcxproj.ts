@@ -206,7 +206,13 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
                 writer.writeContentNode("RuntimeLibrary", {}, runtimeMap[runtime][staticRt]);
 
                 writer.writeContentNode("MultiProcessorCompilation", {}, "true");
-                writer.writeContentNode("LanguageStandard", {}, "stdcpp20");
+                if (prj.language === 'C++') {
+                    writer.writeContentNode("LanguageStandard", {}, "stdcpp20");
+                } else if (prj.language === 'C') {
+                    writer.writeContentNode("LanguageStandard_C", {}, "stdc11");
+                } else {
+                    throw new Error(`Unsupported language: ${prj.language}`);
+                }
 
                 const externalWarningLevel = node.externalWarnings || 'Default';
                 writer.writeContentNode("ExternalWarningLevel", {}, warningLevelMap[externalWarningLevel]);

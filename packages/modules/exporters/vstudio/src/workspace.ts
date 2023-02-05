@@ -18,6 +18,7 @@ const vstudioVersionMapper: any = {
 };
 
 const projectExporterMapper: any = {
+    'C': vcxproj,
     'C++': vcxproj
 };
 
