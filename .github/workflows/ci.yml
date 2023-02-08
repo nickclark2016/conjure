@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  release:
+    types: [created]
 
 jobs:
   linux:
@@ -28,6 +30,7 @@ jobs:
       - name: Package Executable
         run: npm run pkg-linux-x64 -w @premake-core/cli
       - name: Upload Artifacts
+        if: github.event_name == 'release' && github.event.action == 'created'
         uses: actions/upload-artifact@v3
         with:
           name: premake-linux-x64
@@ -53,6 +56,7 @@ jobs:
       - name: Package Executable
         run: npm run pkg-windows-x64 -w @premake-core/cli
       - name: Upload Artifacts
+        if: github.event_name == 'release' && github.event.action == 'created'
         uses: actions/upload-artifact@v3
         with:
           name: premake-windows-x64
