@@ -28,52 +28,16 @@ export interface Toolset {
      * @throws Error if no such tool exists
      */
     toolname: (type: string, language: string) => string;
+
+    /**
+     * Mapping given a flag and value to it's value in the toolset.
+     * 
+     * @param name Name of the flag 
+     * @param value Value to process
+     * @returns Value of string mapped for the given flag
+     */
+    mapFlag: (name: string, value: string) => string;
 }
-
-/**
- * Extension of {@link Toolset} for C++ toolsets.
- */
-export interface CppToolset extends Toolset {
-    /**
-     * Function mapping a directory path to an include flag
-     * 
-     * @param directory Path to directory to include
-     * @returns Include flag for directory
-     */
-    includes: (directory: string) => string;
-
-    /**
-     * Function mapping a directory path to an external include flag
-     * 
-     * @param directory Path to directory to external include
-     * @returns External include flag for directory
-     */
-    externalIncludes: (directory: string) => string;
-
-    /**
-     * Function mapping a preprocessor definition to a define flag
-     * 
-     * @param define Preprocessor definition
-     * @returns Define flag
-     */
-    defines: (define: string) => string;
-
-    /**
-     * Function mapping a file to link against to the linker flag
-     * 
-     * @param lib Library name to link against
-     * @returns Linker flag to link library
-     */
-    links: (lib: string) => string;
-
-    /**
-     * Function mapping a directory to a flag to specify a linker search path
-     * 
-     * @param path Path to search for libraries in
-     * @returns Linker flag specifying search path
-     */
-    libraryDirectories: (path: string) => string;
-};
 
 /**
  * Registry for toolsets.  Allows for global access of toolsets to register, fetch

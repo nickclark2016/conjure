@@ -1,21 +1,24 @@
-import { CppToolset, ToolsetRegistry } from "@premake-core/core";
+import { Toolset, ToolsetRegistry } from "@premake-core/core";
 
-const clangToolset: CppToolset = {
-    includes: function (directory: string): string {
+const flagMapping: any = {
+    includeDirs: (directory: string) => {
         return `-I${directory}`;
     },
-    externalIncludes: function (directory: string): string {
+    externalIncludeDirs: (directory: string) => {
         return `-isystem ${directory}`;
     },
-    defines: function (define: string): string {
+    defines: (define: string) => {
         return `-D${define}`;
     },
-    links: function (lib: string): string {
+    linksStatic: (lib: string) => {
         return `-l${lib}`;
     },
-    libraryDirectories: function (path: string): string {
+    libraryDirs: (path: string) => {
         return `-L${path}`;
-    },
+    }
+}
+
+const clangToolset: Toolset = {
     name: "clang",
     supportedLanguages: new Map(Object.entries({
         "C": ["C11", "C17"],
@@ -34,7 +37,15 @@ const clangToolset: CppToolset = {
             return 'ld';
         }
         throw new Error(`Unexpected tool type: ${type}.`);
-    }
+    },
+    mapFlag: function(name: string, value: string): string {
+        const fn = flagMapping[name];
+        if (fn) {
+            return fn(value);
+        } else {
+            throw new Error(`Flag [${name}] unsupported for toolset msc`);
+        }
+    },
 };
 
 ToolsetRegistry.get().register(clangToolset);

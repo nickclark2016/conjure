@@ -11,6 +11,9 @@ describe('Toolset Registry Tests', () => {
             supportedLanguages: new Map(),
             toolname: function (_type: string, _language: string): string {
                 throw new Error("Function not implemented.");
+            },
+            mapFlag: function (_flag: string, _value: string): string {
+                throw new Error("Function not implemented.");
             }
         };
 
@@ -25,6 +28,9 @@ describe('Toolset Registry Tests', () => {
             name: "test_toolset",
             supportedLanguages: new Map(),
             toolname: function (_type: string, _language: string): string {
+                throw new Error("Function not implemented.");
+            },
+            mapFlag: function (_flag: string, _value: string): string {
                 throw new Error("Function not implemented.");
             }
         };
