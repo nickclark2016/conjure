@@ -3,18 +3,23 @@ import { State } from "../state";
 import { includeFileStack } from "../include";
 import { createMatcher } from "./parser/matcher";
 import { ExpressionParser, FormulaLexer } from "./parser";
-import { DOMNode } from "../dom";
-import { join, relative } from "path";
+import { join } from "path";
 import { pathToWorkspace } from "./scope";
 
 export interface FilterTest {
     platform: string;
     configuration: string;
+    system: string;
+    architecture: string;
+    toolset: string;
 }
 
 export interface FilterContext {
     platform: string;
     configuration: string;
+    system: string;
+    architecture: string;
+    toolset: string;
     pathToWorkspace: string;
 }
 
@@ -47,11 +52,12 @@ function matchElement(test: string, incoming: string): boolean {
 
 export function filterMatch(filter: Filter, incoming: FilterTest) {
     const test = filter.test;
-    return matchElement(test.configuration, incoming.configuration) && matchElement(test.platform, incoming.platform);
+    return matchElement(test.configuration, incoming.configuration) && matchElement(test.platform, incoming.platform) && matchElement(test.system, incoming.system)
+        && matchElement(test.architecture, incoming.architecture) && matchElement(test.toolset, incoming.toolset);
 }
 
 function buildFunctor() {
-    const fn = function(test: FilterTest, callback: (c: FilterContext) => void) {
+    const fn = function (test: FilterTest, callback: (c: FilterContext) => void) {
         const node = State.get().peek();
 
         if (!node) {
@@ -65,7 +71,7 @@ function buildFunctor() {
         }
 
         const pathToWks = pathToWorkspace(node);
-        
+
         const location = includeFileStack[includeFileStack.length - 1];
         const filter: Filter = {
             test,

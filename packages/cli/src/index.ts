@@ -1,4 +1,4 @@
-import { bake, ExporterRegistry, include, State } from "@premake-core/core";
+import { bake, BakeArgs, ExporterRegistry, Host, include, State } from "@premake-core/core";
 import { command } from "cmd-ts";
 import { File } from "cmd-ts/batteries/fs";
 import { option } from "cmd-ts/dist/cjs/option";
@@ -21,12 +21,26 @@ const app = command({
         scriptPath: option({
             type: File,
             long: 'script-path',
-            short: 's',
+            short: 'p',
             description: 'Path from the current working directory to the Premake script to execute',
             defaultValue: () => './premake6.js'
+        }),
+        system: option({
+            type: string,
+            long: 'system',
+            short: 's',
+            description: 'System type override for premake script filters',
+            defaultValue: () => Host.system()
+        }),
+        architecture: option({
+            type: string,
+            long: 'architecture',
+            short: 'a',
+            description: 'Architecture type override for premake script filters',
+            defaultValue: () => Host.architecture()
         })
     },
-    handler: ({ exporterName, scriptPath }) => {
+    handler: ({ exporterName, scriptPath, system, architecture }) => {
         try {
             // Execute the premake configuration script
             const filepath = scriptPath;
@@ -40,8 +54,13 @@ const app = command({
                 throw new Error(`Could not find exporter with name ${exporterName}`);
             }
 
+            const bakeArgs: BakeArgs = {
+                system,
+                architecture
+            };
+
             // Bake the configuration state into a format the exporters can use
-            bake(State.get());
+            bake(State.get(), bakeArgs);
 
             // Use the selected exporter to write the state to file(s)
             exporter.functor(State.get(), {

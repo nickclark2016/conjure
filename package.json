@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "compile": "tsc -b tsconfig.build.json",
-    "start": "node ./packages/cli/build/index.js vstudio -s=./examples/premake6.js"
+    "start": "node ./packages/cli/build/index.js vstudio -p=./examples/premake6.js"
   },
   "keywords": [],
   "author": "",

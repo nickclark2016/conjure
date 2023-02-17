@@ -16,7 +16,7 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": [ "vstudio", "-s=./examples/premake6.js" ]
+            "args": [ "vstudio", "-p=./examples/premake6.js" ]
         }
     ]
 }

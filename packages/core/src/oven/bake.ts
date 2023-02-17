@@ -6,6 +6,14 @@ import { join, normalize, relative } from "path";
 import { State } from "../state";
 import { Filter, filterMatch } from "../scope";
 
+/**
+ * Structure holding arguments for baking.
+ */
+export type BakeArgs = {
+    system: string,
+    architecture: string
+};
+
 function bakeLocation(node: DOMNode) {
     const scriptLocation = node.scriptLocation;
     const scriptDirectory = scriptLocation;
@@ -43,7 +51,10 @@ function bakeInheritedProperties(node: DOMNode) {
             // merge, don't replace
             node[name] = prop.field?.acceptedTypes().merge(existing, prop.value);
         } else if (prop.field?.behaviorOnAccept() === APIBehaviorOnAccept.Replace) {
-            node[name] = prop.value;
+            // don't replace if the value already exists
+            if (node[name] === undefined) {
+                node[name] = prop.field?.acceptedTypes().replace(existing, prop.value);
+            }
         }
     });
 }
@@ -100,7 +111,7 @@ function normalizeFileFields(node: DOMNode) {
     })
 }
 
-function bakeConfigurationTuples(parent: DOMNode) {
+function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
     const configurations: string[] | undefined = parent.configurations;
     const platforms: string[] | undefined = parent.platforms;
 
@@ -127,19 +138,27 @@ function bakeConfigurationTuples(parent: DOMNode) {
 
         const filters: Filter[] = parent.filters || [];
 
-        filters.filter((filter: Filter) => {
-            return filterMatch(filter, {
+        filters.forEach((filter: Filter) => {
+            // Cannot use filter, as it's neeeded process these sequentially, not in stages. This allows previous filters to
+            // apply changes for future defined filters
+            if (!filterMatch(filter, {
                 platform,
-                configuration
-            });
-        }).forEach((filter: Filter) => {
+                configuration,
+                system: args.system || node.architecture || parent.system,
+                architecture: args.architecture || node.architecture || parent.architecture,
+                toolset: node.toolset || parent.toolset
+            })) return;
+
             const tmp = new DOMNode("temp", parent);
             const old = State.get().activate(tmp);
 
             filter.callback({
                 platform,
                 configuration,
-                pathToWorkspace: filter.pathToWorkspace
+                system: args.system || node.architecture || parent.system,
+                architecture: args.architecture || node.architecture || parent.architecture,
+                toolset: node.toolset || parent.toolset,
+                pathToWorkspace: filter.pathToWorkspace,
             });
 
             node.scriptLocation = filter.scriptLocation;
@@ -286,17 +305,17 @@ function bakeWorkspace(wks: DOMNode) {
     bakeLocation(wks);
 }
 
-function bakeGroup(grp: DOMNode) {
+function bakeGroup(grp: DOMNode, args: BakeArgs) {
     bakeLocation(grp);
     bakeInheritedProperties(grp);
-    bakeConfigurationTuples(grp);
+    bakeConfigurationTuples(grp, args);
 }
 
-function bakeProject(prj: DOMNode) {
+function bakeProject(prj: DOMNode, args: BakeArgs) {
     bakeLocation(prj);
     bakeInheritedProperties(prj);
     bakeFiles(prj);
-    bakeConfigurationTuples(prj);
+    bakeConfigurationTuples(prj, args);
 }
 
 /**
@@ -332,7 +351,7 @@ function mergeGroups(wksOrGrp: DOMNode) {
     });
 }
 
-export function bake(state: State) {
+export function bake(state: State, args: BakeArgs) {
     const root = state.peek();
     if (!root) {
         throw new Error(`No root node found in state.`);
@@ -351,11 +370,11 @@ export function bake(state: State) {
                 break;
             }
             case 'group': {
-                bakeGroup(n);
+                bakeGroup(n, args);
                 break;
             }
             case 'project': {
-                bakeProject(n);
+                bakeProject(n, args);
                 break;
             }
         }
