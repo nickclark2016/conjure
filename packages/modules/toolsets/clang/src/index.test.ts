@@ -1,4 +1,4 @@
-import { ToolsetRegistry } from "@premake-core/core";
+import { ToolsetRegistry } from "@conjure/core";
 
 import './index';
 

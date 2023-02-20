@@ -1,4 +1,4 @@
-import { ExporterArguments, ExporterRegistry, State } from "@premake-core/core";
+import { ExporterArguments, ExporterRegistry, State } from "@conjure/core";
 import { workspace } from "./workspace";
 
 function vstudio(state: State, args: ExporterArguments) {

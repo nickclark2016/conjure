@@ -1,5 +1,5 @@
 /**
- * Interface describing behavior when premake encounters an API call.
+ * Interface describing behavior when Conjure encounters an API call.
  */
 export interface IAPIAcceptedType {
     /**
@@ -261,7 +261,7 @@ export class API {
 }
 
 /**
- * Registry containing all APIs in Premake
+ * Registry containing all APIs in Conjure
  */
 export class APIRegistry {
     private static _instance: APIRegistry = new APIRegistry();

@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Premake Example Project",
+            "name": "Conjure Example Project",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -16,7 +16,7 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": [ "vstudio", "-p=./examples/premake6.js" ]
+            "args": [ "vstudio", "-p=./examples/conjure.js" ]
         }
     ]
 }

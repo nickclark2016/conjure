@@ -49,7 +49,7 @@ class Environment {
             __setState: (state: State) => State.set(state),
             __getState: () => State.get(),
             console: console,
-            premake: {
+            conjure: {
                 registerField: (info: FieldAPIInfo) => FieldRegistry.get().register(info),
                 registerExporter: (info: Exporter) => ExporterRegistry.get().register(info),
                 registerToolset: (info: Toolset) => ToolsetRegistry.get().register(info)

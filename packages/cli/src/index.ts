@@ -1,4 +1,4 @@
-import { bake, BakeArgs, ExporterRegistry, Host, include, State } from "@premake-core/core";
+import { bake, BakeArgs, ExporterRegistry, Host, include, State } from "@conjure/core";
 import { command } from "cmd-ts";
 import { File } from "cmd-ts/batteries/fs";
 import { option } from "cmd-ts/dist/cjs/option";
@@ -7,12 +7,12 @@ import { run } from "cmd-ts/dist/cjs/runner";
 import { string } from "cmd-ts/dist/cjs/types";
 
 // Load all the core modules
-require("@premake-core/vstudio");
-require("@premake-core/clang");
-require("@premake-core/msc");
+require("@conjure/vstudio");
+require("@conjure/clang");
+require("@conjure/msc");
 
 const app = command({
-    name: 'premake',
+    name: 'conjure',
     args: {
         exporterName: positional({
             type: string,
@@ -22,27 +22,27 @@ const app = command({
             type: File,
             long: 'script-path',
             short: 'p',
-            description: 'Path from the current working directory to the Premake script to execute',
-            defaultValue: () => './premake6.js'
+            description: 'Path from the current working directory to the Conjure script to execute',
+            defaultValue: () => './conjure.js'
         }),
         system: option({
             type: string,
             long: 'system',
             short: 's',
-            description: 'System type override for premake script filters',
+            description: 'System type override for conjure script filters',
             defaultValue: () => Host.system()
         }),
         architecture: option({
             type: string,
             long: 'architecture',
             short: 'a',
-            description: 'Architecture type override for premake script filters',
+            description: 'Architecture type override for conjure script filters',
             defaultValue: () => Host.architecture()
         })
     },
     handler: ({ exporterName, scriptPath, system, architecture }) => {
         try {
-            // Execute the premake configuration script
+            // Execute the conjure configuration script
             const filepath = scriptPath;
             include(filepath);
 

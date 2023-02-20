@@ -1,4 +1,4 @@
-import { DOMNode, XmlWriter } from "@premake-core/core";
+import { DOMNode, XmlWriter } from "@conjure/core";
 import { dirname, extname, join, relative } from "path";
 
 const toolsetNameMap: any = {

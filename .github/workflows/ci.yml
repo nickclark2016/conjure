@@ -1,4 +1,4 @@
-name: Premake CI
+name: Conjure CI
 
 on:
   push:
@@ -28,12 +28,12 @@ jobs:
       - name: Run Tests
         run: npm run test --workspaces --if-present
       - name: Package Executable
-        run: npm run pkg-linux-x64 -w @premake-core/cli
+        run: npm run pkg-linux-x64 -w @conjure/cli
       - name: Upload Artifacts
         if: github.event_name == 'release' && github.event.action == 'created'
         uses: actions/upload-artifact@v3
         with:
-          name: premake-linux-x64
+          name: conjure-linux-x64
           path: packages/cli/bin/
   windows:
     runs-on: windows-latest
@@ -54,10 +54,10 @@ jobs:
       - name: Run Tests
         run: npm run test --workspaces --if-present -- --passWithNoTests
       - name: Package Executable
-        run: npm run pkg-windows-x64 -w @premake-core/cli
+        run: npm run pkg-windows-x64 -w @conjure/cli
       - name: Upload Artifacts
         if: github.event_name == 'release' && github.event.action == 'created'
         uses: actions/upload-artifact@v3
         with:
-          name: premake-windows-x64
+          name: conjure-windows-x64
           path: packages/cli/bin/

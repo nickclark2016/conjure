@@ -1,5 +1,5 @@
 {
-  "name": "@premake-core/core",
+  "name": "@conjure/core",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",

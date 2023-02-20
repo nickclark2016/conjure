@@ -1,26 +1,26 @@
 {
-  "name": "@premake-core/cli",
+  "name": "@conjure/cli",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
   "scripts": {
     "build": "compile",
     "begin": "node build/index.js",
-    "pkg-windows-x64": "pkg ./build/index.js -c package.json -t node16-win-x64 -o bin/premake",
-    "pkg-linux-x64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/premake",
-    "pkg-linux-arm64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/premake",
-    "pkg-macos-x64": "pkg ./build/index.js -c package.json -t node16-macos-x64 -o bin/premake",
-    "pkg-macos-arm64": "pkg ./build/index.js -c package.json -t node16-macos-arm64 -o bin/premake"
+    "pkg-windows-x64": "pkg ./build/index.js -c package.json -t node16-win-x64 -o bin/conjure",
+    "pkg-linux-x64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/conjure",
+    "pkg-linux-arm64": "pkg ./build/index.js -c package.json -t node16-linux-x64 -o bin/conjure",
+    "pkg-macos-x64": "pkg ./build/index.js -c package.json -t node16-macos-x64 -o bin/conjure",
+    "pkg-macos-arm64": "pkg ./build/index.js -c package.json -t node16-macos-arm64 -o bin/conjure"
   },
   "private": "true",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@premake-core/clang": "^1.0.0",
-    "@premake-core/core": "^1.0.0",
-    "@premake-core/msc": "^1.0.0",
-    "@premake-core/vstudio": "^1.0.0",
+    "@conjure/clang": "^1.0.0",
+    "@conjure/core": "^1.0.0",
+    "@conjure/msc": "^1.0.0",
+    "@conjure/vstudio": "^1.0.0",
     "@types/node": "^18.11.18",
     "cmd-ts": "^0.12.0"
   },

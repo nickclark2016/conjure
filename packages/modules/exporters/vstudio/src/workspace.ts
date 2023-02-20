@@ -1,4 +1,4 @@
-import { DOMNode, ExporterArguments, TextWriter } from "@premake-core/core";
+import { DOMNode, ExporterArguments, TextWriter } from "@conjure/core";
 import { join, normalize, relative, resolve } from "path";
 import { v4 as uuidV4 } from "uuid";
 import { vcxproj } from "./vcxproj";

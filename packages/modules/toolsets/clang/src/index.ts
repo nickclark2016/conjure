@@ -1,4 +1,4 @@
-import { Toolset, ToolsetRegistry } from "@premake-core/core";
+import { Toolset, ToolsetRegistry } from "@conjure/core";
 
 const flagMapping: any = {
     includeDirs: (directory: string) => {
