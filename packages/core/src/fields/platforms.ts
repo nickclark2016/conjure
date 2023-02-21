@@ -9,7 +9,8 @@ const platformApiInfo: FieldAPIInfo = {
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
     inherited: true,
-    isFiles: false
+    isFiles: false,
+    default: ['x64']
 };
 
 FieldRegistry.get().register(platformApiInfo);

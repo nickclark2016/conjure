@@ -9,7 +9,8 @@ const configurationsApiInfo: FieldAPIInfo = {
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
     inherited: true,
-    isFiles: false
+    isFiles: false,
+    default: ['Debug', 'Release']
 };
 
 FieldRegistry.get().register(configurationsApiInfo);
