@@ -76,6 +76,9 @@ export class ToolsetRegistry {
     register(toolset: Toolset) {
         if (this._toolsets.has(toolset.name)) {
             FieldRegistry.get().fetch('language')?.addAcceptedArguments(...toolset.supportedLanguages.keys());
+            for (const versions in toolset.supportedLanguages.values()) {
+                FieldRegistry.get().fetch('languageVersion')?.addAcceptedArguments(...versions);
+            }
             throw new Error(`Toolset with name ${toolset.name} already exists.`);
         }
         this._toolsets.set(toolset.name, toolset);

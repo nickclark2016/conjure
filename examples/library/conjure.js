@@ -1,6 +1,7 @@
 group('group', (grp) => {
     project('library', (prj) => {
         language('C++');
+        languageVersion('C++20');
         toolset('msc:143');
         kind('StaticLib');
         files([ '*/**.hpp', '*/**.cpp', '*/**.ixx' ]);

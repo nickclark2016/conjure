@@ -1,5 +1,10 @@
 import { DOMNode, XmlWriter } from "@conjure/core";
 import { dirname, extname, join, relative } from "path";
+import { vs2022 } from "./vs2022";
+
+const defaults: any = {
+    vs2022
+}
 
 const toolsetNameMap: any = {
     'msc:141': 'v141',
@@ -71,6 +76,19 @@ const runtimeMap: any = {
     }
 }
 
+const versionMap: any = {
+    'C': {
+        'C11': 'stdc11',
+        'C17': 'stdc17'
+    },
+    'C++': {
+        'C++14': 'stdcpp14',
+        'C++17': 'stdcpp17',
+        'C++20': 'stdcpp20',
+        'C++Latest': 'stdcpplatest'
+    },
+}
+
 function writeConfigurationGroups(prj: DOMNode, writer: XmlWriter) {
     writer.writeNode("ItemGroup", { Label: "ProjectConfigurations" }, (writer: XmlWriter) => {
         prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
@@ -123,7 +141,7 @@ function writeConfigurationProps(prj: DOMNode, writer: XmlWriter) {
             writer.writeContentNode("ConfigurationType", {}, kindMap[node.kind]);
             writer.writeContentNode("UseDebugLibraries", {}, `${useDebugLibs(node)}`);
             writer.writeContentNode("CharacterSet", {}, "Unicode");
-            writer.writeContentNode("PlatformToolset", {}, toolsetNameMap[node.toolset]);
+            writer.writeContentNode("PlatformToolset", {}, toolsetNameMap[node.toolset || defaults.vs2022.vcxproj.defaults.toolset]);
         });
     });
 }
@@ -206,10 +224,11 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
                 writer.writeContentNode("RuntimeLibrary", {}, runtimeMap[runtime][staticRt]);
 
                 writer.writeContentNode("MultiProcessorCompilation", {}, "true");
+                const langVersion = prj.languageVersion;
                 if (prj.language === 'C++') {
-                    writer.writeContentNode("LanguageStandard", {}, "stdcpp20");
+                    writer.writeContentNode("LanguageStandard", {}, versionMap['C++'][langVersion || defaults.vs2022.vcxproj.defaults.cppversion]);
                 } else if (prj.language === 'C') {
-                    writer.writeContentNode("LanguageStandard_C", {}, "stdc11");
+                    writer.writeContentNode("LanguageStandard_C", {}, versionMap['C'][langVersion || defaults.vs2022.vcxproj.defaults.cversion]);
                 } else {
                     throw new Error(`Unsupported language: ${prj.language}`);
                 }

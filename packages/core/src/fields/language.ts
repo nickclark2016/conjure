@@ -12,4 +12,16 @@ const languageApiInfo: FieldAPIInfo = {
     isFiles: false
 };
 
+const languageVersionApiInfo: FieldAPIInfo = {
+    name: 'languageVersion',
+    accepts: APIAcceptedTypes.String,
+    expectedArgumentCount: 1,
+    allowedInScopes: ['project', 'block'],
+    acceptedArguments: [],
+    acceptBehavior: APIBehaviorOnAccept.Replace,
+    inherited: false,
+    isFiles: false
+};
+
 FieldRegistry.get().register(languageApiInfo);
+FieldRegistry.get().register(languageVersionApiInfo);
