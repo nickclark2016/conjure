@@ -49,6 +49,7 @@ class Environment {
             __setState: (state: State) => State.set(state),
             __getState: () => State.get(),
             console: console,
+            process: process,
             conjure: {
                 registerField: (info: FieldAPIInfo) => FieldRegistry.get().register(info),
                 registerExporter: (info: Exporter) => ExporterRegistry.get().register(info),

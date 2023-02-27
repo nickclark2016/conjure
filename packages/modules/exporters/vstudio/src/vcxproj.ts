@@ -245,23 +245,28 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
                     writer.writeContentNode("GenerateDebugInformation", {}, "true");
                 }
 
-                const additionalLibs = node.staticLinks || []; // .lib files to link to
-                if (additionalLibs.length > 0) {
-                    additionalLibs.push("$(CoreLibraryDependencies)", "%(AdditionalDependencies)");
-                    writer.writeContentNode("AdditionalDependencies", {}, additionalLibs.join(";"));
-                }
-
-                const additionalLibDirs = node.libraryDirs || [];
-                if (additionalLibDirs.length > 0) {
-                    writer.writeContentNode("AdditionalLibraryDirectories", {}, additionalLibDirs.join(";"));
-                }
-
                 const optimize = node.optimize;
                 if (optimize && optimize !== 'Off') {
                     writer.writeContentNode("EnableCOMDATFolding", {}, "true");
                     writer.writeContentNode("OptimizeReferences", {}, "true");
                 }
             });
+
+            const additionalLibs = node.linksStatic || []; // .lib files to link to
+            if (additionalLibs.length > 0) {
+                writer.writeNode('Lib', {}, (writer) => {
+                    additionalLibs.push("$(CoreLibraryDependencies)", "%(AdditionalDependencies)");
+                    writer.writeContentNode("AdditionalDependencies", {}, additionalLibs.join(";"));
+                });
+            }
+
+            const additionalLibDirs = node.libraryDirs || [];
+            if (additionalLibDirs.length > 0) {
+                writer.writeNode('Lib', {}, (writer) => {
+                    writer.writeContentNode("AdditionalLibraryDirectories", {}, additionalLibDirs.join(";"));
+                });
+            }
+
             // TODO: Pre-Build, Post-Build, and Post-Link Events
         });
     });
