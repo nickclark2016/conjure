@@ -267,7 +267,26 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
                 });
             }
 
-            // TODO: Pre-Build, Post-Build, and Post-Link Events
+            const preBuildEvents = node.preBuildEvents || [];
+            if (preBuildEvents.length > 0) {
+                writer.writeNode('PreBuildEvent', {}, (writer) => {
+                    writer.writeContentNode('Command', {}, preBuildEvents.join(" &amp;&amp; "));
+                });
+            }
+
+            const postBuildEvents = node.postBuildEvents || [];
+            if (postBuildEvents.length > 0) {
+                writer.writeNode('PostBuildEvent', {}, (writer) => {
+                    writer.writeContentNode('Command', {}, postBuildEvents.join(" &amp;&amp; "));
+                });
+            }
+
+            const postLinkEvents = node.postLinkEvents || [];
+            if (postLinkEvents.length > 0) {
+                writer.writeNode('PostLinkEvent', {}, (writer) => {
+                    writer.writeContentNode('Command', {}, postLinkEvents.join(" &amp;&amp; "));
+                });
+            }
         });
     });
 }
