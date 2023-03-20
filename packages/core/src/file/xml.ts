@@ -2,14 +2,14 @@ import { TextWriter } from "./text";
 
 export class XmlWriter {
     private _writer: TextWriter;
-    
+
     constructor(path: string) {
         this._writer = new TextWriter(path);
         this._writer.write(`<?xml version="1.0" encoding="utf-8"?>`);
     }
 
     writeNode(element: string, attributes: any, callback: (writer: XmlWriter) => void): void {
-        const tagContents = [element, ... this._computeAttributeString(attributes)].join(" ");
+        const tagContents = escape([element, ... this._computeAttributeString(attributes)].join(" "));
 
         this._writer.write(`<${tagContents}>`);
         this._writer.indent();
@@ -19,9 +19,9 @@ export class XmlWriter {
     }
 
     writeContentNode(element: string, attributes: any, content: string | null = null) {
-        const tagContents = [element, ... this._computeAttributeString(attributes)].join(" ");
+        const tagContents = escape([element, ... this._computeAttributeString(attributes)].join(" "));
         if (content) {
-            this._writer.write(`<${tagContents}>${content}</${element}>`);
+            this._writer.write(`<${tagContents}>${escape(content)}</${escape(element)}>`);
         } else {
             this._writer.write(`<${tagContents} />`)
         }
@@ -29,6 +29,15 @@ export class XmlWriter {
 
     close(): void {
         this._writer.close();
+    }
+
+    static escape(input: string): string {
+        let output = input.replaceAll('\"', '&quot;');
+        output = output.replaceAll('\'', "&apos;");
+        output = output.replaceAll('<', "&lt;");
+        output = output.replaceAll('>', "&gt;");
+        output = output.replaceAll('&', "&amp;");
+        return output;
     }
 
     private _computeAttributeString(attributes: any) {
