@@ -59,7 +59,7 @@ function bakeInheritedProperties(node: DOMNode) {
     });
 }
 
-function cartesianProduct<Type>(sets: Type[][]): Type[][] {
+export function cartesianProduct<Type>(sets: Type[][]): Type[][] {
     return sets.reduce<Type[][]>(
         (results, ids) =>
             results
@@ -109,6 +109,61 @@ function normalizeFileFields(node: DOMNode) {
             }
         }
     })
+}
+
+function bakeWorkspaceConfig(wks: DOMNode, args: BakeArgs) {
+    const filters: Filter[] = wks.filters || [];
+    filters.filter(filter => {
+        return filter.test.platform === undefined && filter.test.configuration === undefined;
+    }).forEach(filter => {
+        const criteria = {
+            platform: '',
+            configuration: '',
+            system: args.system || wks.architecture,
+            architecture: args.architecture || wks.architecture,
+            toolset: wks.toolset
+        };
+        if (!filterMatch(filter, criteria)) return;
+
+        const tmp = new DOMNode("temp", wks);
+        const old = State.get().activate(tmp);
+
+        filter.callback({ ...criteria, pathToWorkspace: filter.pathToWorkspace });
+
+        State.get().activate(old);
+        wks.removeChild(tmp);
+
+        FieldRegistry.get().all().filter(field => {
+            const value = tmp[field.name()];
+            if (value) {
+                if (field.isFileField()) {
+                    const pathToFilterNode = relative(wks.absoluteScriptLocation, filter.absoluteScriptPath);
+                    if (Array.isArray(value)) {
+                        tmp[field.name()] = value.map((v) => join(pathToFilterNode, v));
+                    } else if (typeof value === 'string') {
+                        tmp[field.name()] = join(pathToFilterNode, value);
+                    }
+                }
+
+                const behavior = field.behaviorOnAccept();
+
+                const combined = (() => {
+                    switch (behavior) {
+                        case APIBehaviorOnAccept.Merge: {
+                            return field.acceptedTypes().merge(wks[field.name()], tmp[field.name()]);
+                        }
+                        case APIBehaviorOnAccept.Remove:  {
+                            return field.acceptedTypes().remove(wks[field.name()], tmp[field.name()]);
+                        }
+                        case APIBehaviorOnAccept.Replace: {
+                            return field.acceptedTypes().replace(wks[field.name()], tmp[field.name()]);
+                        }
+                    }
+                })();
+                wks[field.name()] = combined;
+            }
+        });
+    });
 }
 
 function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
@@ -301,8 +356,9 @@ function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
     });
 }
 
-function bakeWorkspace(wks: DOMNode) {
+function bakeWorkspace(wks: DOMNode, args: BakeArgs) {
     bakeLocation(wks);
+    bakeWorkspaceConfig(wks, args);
 }
 
 function bakeGroup(grp: DOMNode, args: BakeArgs) {
@@ -366,7 +422,7 @@ export function bake(state: State, args: BakeArgs) {
     nodes.forEach((n) => {
         switch (n.apiName) {
             case 'workspace': {
-                bakeWorkspace(n);
+                bakeWorkspace(n, args);
                 break;
             }
             case 'group': {

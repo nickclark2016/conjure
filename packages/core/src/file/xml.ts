@@ -9,7 +9,7 @@ export class XmlWriter {
     }
 
     writeNode(element: string, attributes: any, callback: (writer: XmlWriter) => void): void {
-        const tagContents = escape([element, ... this._computeAttributeString(attributes)].join(" "));
+        const tagContents = [element, ... this._computeAttributeString(attributes)].join(" ");
 
         this._writer.write(`<${tagContents}>`);
         this._writer.indent();
@@ -19,9 +19,9 @@ export class XmlWriter {
     }
 
     writeContentNode(element: string, attributes: any, content: string | null = null) {
-        const tagContents = escape([element, ... this._computeAttributeString(attributes)].join(" "));
+        const tagContents = [element, ... this._computeAttributeString(attributes)].join(" ");
         if (content) {
-            this._writer.write(`<${tagContents}>${escape(content)}</${escape(element)}>`);
+            this._writer.write(`<${tagContents}>${XmlWriter.escape(content)}</${escape(element)}>`);
         } else {
             this._writer.write(`<${tagContents} />`)
         }

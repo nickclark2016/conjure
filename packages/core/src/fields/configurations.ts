@@ -5,7 +5,7 @@ const configurationsApiInfo: FieldAPIInfo = {
     name: 'configurations',
     accepts: APIAcceptedTypes.Set(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
-    allowedInScopes: ['workspace'],
+    allowedInScopes: ['workspace', 'when'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
     inherited: true,

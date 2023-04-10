@@ -20,6 +20,7 @@
     "@conjure/clang": "^1.0.0",
     "@conjure/core": "^1.0.0",
     "@conjure/msc": "^1.0.0",
+    "@conjure/makefile": "^1.0.0",
     "@conjure/vstudio": "^1.0.0",
     "@types/node": "^18.11.18",
     "cmd-ts": "^0.12.0"

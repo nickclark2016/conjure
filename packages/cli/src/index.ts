@@ -5,8 +5,10 @@ import { option } from "cmd-ts/dist/cjs/option";
 import { positional } from "cmd-ts/dist/cjs/positional";
 import { run } from "cmd-ts/dist/cjs/runner";
 import { string } from "cmd-ts/dist/cjs/types";
+import { dirname } from "path";
 
 // Load all the core modules
+require("@conjure/makefile");
 require("@conjure/vstudio");
 require("@conjure/clang");
 require("@conjure/msc");
@@ -45,6 +47,11 @@ const app = command({
             // Execute the conjure configuration script
             const filepath = scriptPath;
             include(filepath);
+
+            const root = State.get().peek();
+            if (root) {
+                root.location = dirname(scriptPath);
+            }
 
             // Validate the exporter chosen.  This must be done after loading the configuration script in case
             // the configuration script loads an exporter.

@@ -9,6 +9,9 @@
       "path": "../core"
     },
     {
+      "path": "../modules/exporters/makefile"
+    },
+    {
       "path": "../modules/exporters/vstudio"
     },
     {

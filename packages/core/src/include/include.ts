@@ -93,6 +93,7 @@ export function include(src: string) {
     }
 
     env.execute(code);
+    
     includeFileStack.pop();
 
     return env.getContext().__state;

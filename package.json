@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "compile": "tsc -b tsconfig.build.json",
-    "start": "node ./packages/cli/build/index.js vstudio -p=./examples/conjure.js"
+    "start-vs": "node ./packages/cli/build/index.js vstudio -p=./examples/conjure.js",
+    "start-make": "node ./packages/cli/build/index.js gmake -p=./examples/conjure.js"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +13,7 @@
   "workspaces": [
     "packages/cli",
     "packages/core",
+    "packages/modules/exporters/makefile",
     "packages/modules/exporters/vstudio",
     "packages/modules/toolsets/clang",
     "packages/modules/toolsets/msc"
