@@ -5,6 +5,8 @@
       { "path": "packages/cli" },
       { "path": "packages/modules/exporters/makefile" },
       { "path": "packages/modules/exporters/vstudio" },
+      { "path": "packages/modules/toolsets/clang" },
+      { "path": "packages/modules/toolsets/gcc" },
       { "path": "packages/modules/toolsets/msc" }
     ]
   }

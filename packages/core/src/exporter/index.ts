@@ -3,6 +3,7 @@ import { State } from "../state";
 export interface ExporterArguments {
     name: string;
     version: string;
+    system: string;
 };
 
 export type Exporter = {

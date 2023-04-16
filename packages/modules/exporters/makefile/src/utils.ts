@@ -20,3 +20,13 @@ export function writeShell(_: DOMNode, file: TextWriter) {
     file.write('endif');
     file.write('');
 }
+
+export function makeEscape(input: string) {
+    return input.replaceAll('\\', '/')
+        .replaceAll('\\', '\\\\')
+        .replaceAll('\"', '\\\"')
+        .replaceAll(" ", "\\ ")
+        .replaceAll("%(", "\\(")
+        .replaceAll("%)", "\\)")
+        .replaceAll("$\\%((.-)\\%)", "$(%1)");
+}

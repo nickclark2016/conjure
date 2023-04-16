@@ -1,7 +1,7 @@
 import { DOMNode, ExporterArguments, TextWriter } from "@conjure/core";
 import { dirname, join, relative } from "path";
 import { cppProject } from "./cppproject";
-import { fetchConfigNames, writeShell } from "./utils";
+import { fetchConfigNames, makeEscape, writeShell } from "./utils";
 
 const projectMap: any = {
     'C++': cppProject
@@ -42,7 +42,7 @@ function writeHelp(wks: DOMNode, file: TextWriter) {
     file.write('@echo "  clean"');
 
     wks.getAllNodes().filter(n => n !== wks && (n.apiName === 'project' || n.apiName === 'group')).forEach(n => {
-        file.write(`@echo "  ${n.getName()}"`);
+        file.write(`@echo "  ${makeEscape(n.getName())}"`);
     });
 
     file.outdent();
@@ -54,15 +54,15 @@ function writeProjetsAndGroups(wks: DOMNode, file: TextWriter) {
     const projects = wks.getAllNodes().filter(n => n.apiName === 'project');
     const groups = wks.getAllNodes().filter(n => n.apiName === 'group');
 
-    const projectString = projects.map(p => p.getName()).join(' ');
-    const groupString = groups.map(g => g.getName()).join(' ');
+    const projectString = projects.map(p => makeEscape(p.getName())).join(' ');
+    const groupString = groups.map(g => makeEscape(g.getName())).join(' ');
 
     file.write(`PROJECTS := ${projectString}`);
     file.write(`GROUPS := ${groupString}`);
     file.write("");
 }
 
-function writePhonies(wks: DOMNode, file: TextWriter) {
+function writePhonies(_: DOMNode, file: TextWriter) {
     file.write("# Phony rules")
     file.write('.PHONY: all clean help $(PROJECTS) $(GROUPS)');
     file.write("");
@@ -73,7 +73,10 @@ function writePhonies(wks: DOMNode, file: TextWriter) {
 function writeGroupRules(wks: DOMNode, file: TextWriter) {
     file.write(`# Group Rules`)
     wks.getAllNodes().filter(n => n.apiName === 'group').forEach(n => {
-        file.write(`${n.getName()}: ${n.getChildren().filter(desc => desc.apiName === 'project' || desc.apiName === 'group').map(desc => desc.getName()).join(' ')}`);
+        file.write(`${makeEscape(n.getName())}: ${n.getChildren()
+            .filter(desc => desc.apiName === 'project' || desc.apiName === 'group')
+            .map(desc => makeEscape(desc.getName()))
+            .join(' ')}`);
         file.indent();
         file.write(`\t@echo "==== Building Group ${n.getName()} - ($(config)) ===="`)
         file.outdent();
@@ -88,13 +91,13 @@ function writeProjectRules(wks: DOMNode, file: TextWriter) {
 
         const abspath = join(n.location, n.__makefile_name);
         const relpath = relative(wks.location, abspath);
-        const prjdir = dirname(relpath);
+        const prjdir = makeEscape(dirname(relpath));
         const prjfile = n.__makefile_name;
 
         if (deps.length == 0) {
-            file.write(`${n.getName()}:`);
+            file.write(`${makeEscape(n.getName())}:`);
         } else {
-            file.write(`${n.getName()}: ${deps.join(' ')}`);
+            file.write(`${makeEscape(n.getName())}: ${deps.map((d: string) => makeEscape(d)).join(' ')}`);
         }
         file.indent();
         file.write(`\t@echo "==== Building ${n.getName()} - ($(config)) ===="`);
@@ -139,7 +142,7 @@ export function workspace(wks: DOMNode, args: ExporterArguments) {
 
     groupsAndProjects.forEach((node) => {
         if (node.apiName === 'project') {
-            projectMap[node.language](node);
+            projectMap[node.language](node, args);
         }
     });
 }

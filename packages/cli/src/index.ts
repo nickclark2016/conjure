@@ -11,6 +11,7 @@ import { dirname } from "path";
 require("@conjure/makefile");
 require("@conjure/vstudio");
 require("@conjure/clang");
+require("@conjure/gcc");
 require("@conjure/msc");
 
 const app = command({
@@ -72,7 +73,8 @@ const app = command({
             // Use the selected exporter to write the state to file(s)
             exporter.functor(State.get(), {
                 name: exporterName,
-                version: "2022"
+                version: "2022",
+                system: Host.system()
             });
         } catch (err) {
             console.log(err);

@@ -19,6 +19,7 @@
   "dependencies": {
     "@conjure/clang": "^1.0.0",
     "@conjure/core": "^1.0.0",
+    "@conjure/gcc": "^1.0.0",
     "@conjure/msc": "^1.0.0",
     "@conjure/makefile": "^1.0.0",
     "@conjure/vstudio": "^1.0.0",

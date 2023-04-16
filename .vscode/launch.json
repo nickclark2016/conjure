@@ -16,7 +16,7 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": [ "gmake", "-p=./examples/conjure.js" ]
+            "args": [ "vstudio", "-p=./examples/conjure.js" ]
         }
     ]
 }

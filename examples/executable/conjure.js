@@ -1,6 +1,6 @@
 project('executable', (prj) => {
     language('C++');
-    toolset('msc:143');
+    toolset('gcc');
     kind('ConsoleApp');
 
     dependsOn(['library']);

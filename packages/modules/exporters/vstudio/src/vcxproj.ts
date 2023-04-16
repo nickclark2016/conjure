@@ -292,17 +292,18 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
 }
 
 function writeFiles(prj: DOMNode, writer: XmlWriter) {
+    const inputs = [...new Set([...prj.inputFiles, ...prj.getChildren().filter(n => n.apiName === 'when').filter(n => n.inputFiles !== null).flatMap(n => n.inputFiles)])];
+
     writer.writeNode("ItemGroup", {}, (writer) => {
-        const includes = new Set(prj.getAllNodes().flatMap(node => {
-            return (node.inputFiles || []).filter((file: string) => {
-                const extension = extname(file);
-                return itemTypeExtensionMap.ClInclude.includes(extension);
-            });
-        }));
+        const includes = inputs.filter((file: string) => {
+            const extension = extname(file);
+            return itemTypeExtensionMap.ClInclude.includes(extension);
+        });
+
         includes.forEach((file: string) => {
             const filters = prj.getChildren().filter(child => child.apiName === 'when');
             const filtersWithoutChild = filters.filter(child => !child.inputFiles.includes(file));
-            if (filtersWithoutChild.length === filters.length) {
+            if (filtersWithoutChild.length === filters.length || filtersWithoutChild.length === 0) { // if everyone has it or no one has it, simple node
                 writer.writeContentNode("ClInclude", {
                     Include: file
                 });
@@ -312,7 +313,7 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
                     filtersWithoutChild.forEach((filter) => {
                         writer.writeContentNode("ExcludedFromBuild", {
                             Condition: `'$(Configuration)|$(Platform)' == '${filter.configuration}|${filter.platform}'`
-                        }, "true")
+                        }, "true");
                     });
                 });
             }
@@ -320,14 +321,28 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
     });
 
     writer.writeNode("ItemGroup", {}, (writer) => {
-        const sources = prj.inputFiles.filter((file: string) => {
+        const sources = inputs.filter((file: string) => {
             const extension = extname(file);
             return itemTypeExtensionMap.ClCompile.includes(extension);
         });
+
         sources.forEach((file: string) => {
-            writer.writeContentNode("ClCompile", {
-                Include: file
-            });
+            const filters = prj.getChildren().filter(child => child.apiName === 'when');
+            const filtersWithoutChild = filters.filter(child => !child.inputFiles.includes(file));
+            if (filtersWithoutChild.length === filters.length || filtersWithoutChild.length === 0) { // if everyone has it or no one has it, simple node
+                writer.writeContentNode("ClCompile", {
+                    Include: file
+                });
+            } else {
+                writer.writeNode("ClCompile", {Include: file}, (writer) => {
+                    // <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+                    filtersWithoutChild.forEach((filter) => {
+                        writer.writeContentNode("ExcludedFromBuild", {
+                            Condition: `'$(Configuration)|$(Platform)' == '${filter.configuration}|${filter.platform}'`
+                        }, "true");
+                    });
+                });
+            }
         });
     });
 }

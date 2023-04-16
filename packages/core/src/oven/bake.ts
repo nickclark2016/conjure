@@ -270,6 +270,8 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
         bakeFiles(node);
         normalizeFileFields(node);
     });
+
+    // TODO: If value of field is same in all configuration-platform tuples, then extract to base
 }
 
 function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {

@@ -16,6 +16,7 @@
     "packages/modules/exporters/makefile",
     "packages/modules/exporters/vstudio",
     "packages/modules/toolsets/clang",
+    "packages/modules/toolsets/gcc",
     "packages/modules/toolsets/msc"
   ]
 }

@@ -1,8 +1,8 @@
-group('group', (grp) => {
+group('group with space', (_) => {
     project('library', (prj) => {
         language('C++');
         languageVersion('C++20');
-        toolset('msc:143');
+        toolset('gcc');
         kind('StaticLib');
         files([ '*/**.hpp', '*/**.cpp', '*/**.ixx' ]);
 
@@ -22,15 +22,11 @@ group('group', (grp) => {
             intermediateDirectory(`${ctx.pathToWorkspace}/bin-int/${ctx.platform}/${prj.name}/${ctx.configuration}`);
         });
 
-        when({ system: 'windows' }, () => {
-            toolset('clang');
-        });
-
-        when({ toolset: 'clang' }, () => {
-            includeDirs([
-                './ClangInc'
+        when({ system: 'windows' }, (_) => {
+            files([
+                'win.cpp'
             ]);
-        })
+        });
 
         block('library:public', (ctx) => {
             includeDirs([
