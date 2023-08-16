@@ -283,12 +283,12 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
         includes.forEach((file: string) => {
             const filters = prj.getChildren().filter(child => child.apiName === 'when');
             const filtersWithoutChild = filters.filter(child => !child.inputFiles.includes(file));
-            if (filtersWithoutChild.length === filters.length) {
+            if (filtersWithoutChild.length === filters.length || filtersWithoutChild.length === 0) {
                 writer.writeContentNode("ClInclude", {
                     Include: file
                 });
             } else {
-                writer.writeNode("ClInclude", {Include: file}, (writer) => {
+                writer.writeNode("ClInclude", { Include: file }, (writer) => {
                     // <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
                     filtersWithoutChild.forEach((filter) => {
                         writer.writeContentNode("ExcludedFromBuild", {
@@ -301,14 +301,28 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
     });
 
     writer.writeNode("ItemGroup", {}, (writer) => {
-        const sources = prj.inputFiles.filter((file: string) => {
-            const extension = extname(file);
-            return itemTypeExtensionMap.ClCompile.includes(extension);
-        });
-        sources.forEach((file: string) => {
-            writer.writeContentNode("ClCompile", {
-                Include: file
+        const sources = new Set(prj.getAllNodes().flatMap(node => {
+            return (node.inputFiles || []).filter((file: string) => {
+                const extension = extname(file);
+                return itemTypeExtensionMap.ClCompile.includes(extension);
             });
+        }));
+        sources.forEach((file: string) => {
+            const filters = prj.getChildren().filter(child => child.apiName === 'when');
+            const filtersWithoutChild = filters.filter(child => !child.inputFiles.includes(file));
+            if (filtersWithoutChild.length === filters.length || filtersWithoutChild.length === 0) {
+                writer.writeContentNode("ClCompile", {
+                    Include: file
+                });
+            } else {
+                writer.writeNode("ClCompile", { Include: file }, (writer) => {
+                    filtersWithoutChild.forEach((filter) => {
+                        writer.writeContentNode("ExcludedFromBuild", {
+                            Condition: `'$(Configuration)|$(Platform)' == '${filter.configuration}|${filter.platform}'`
+                        }, "true")
+                    });
+                });
+            }
         });
     });
 }
@@ -323,7 +337,7 @@ function writeProjectReferences(prj: DOMNode, writer: XmlWriter) {
 
                 const rel = relative(myPath, depPath);
                 writer.writeNode("ProjectReference", { Include: rel }, (writer) => {
-                    writer.writeContentNode("Project", {}, dep.uuid);
+                    writer.writeContentNode("Project", {}, `{${dep.uuid}}`);
                 });
             });
         });

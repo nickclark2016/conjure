@@ -16,5 +16,9 @@ project('executable', (prj) => {
         optimize('On');
     });
 
+    when({ system: 'windows' }, (ctx) => {
+        files([ 'windows.cpp' ]);
+    });
+
     uses([ 'library:public' ]);
 });
