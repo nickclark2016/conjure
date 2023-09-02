@@ -1,95 +1,17 @@
-import { DOMNode, XmlWriter } from "@conjure/core";
+import { DOMNode, ExporterArguments, XmlWriter } from "@conjure/core";
 import { dirname, extname, join, relative } from "path";
 import { vs2022 } from "./vs2022";
+
+const versions: any = {
+    '2022': vs2022,
+    default: vs2022,
+}
 
 const defaults: any = {
     vs2022
 }
 
-const toolsetNameMap: any = {
-    'msc:141': 'v141',
-    'msc:142': 'v142',
-    'msc:143': 'v143',
-    'clang': 'ClangCL'
-};
-
-const kindMap: any = {
-    'ConsoleApp': 'Application',
-    'StaticLib': 'StaticLibrary',
-    'SharedLib': 'DynamicLibrary'
-};
-
-const targetExtensionMap: any = {
-    'ConsoleApp': '.exe',
-    'StaticLib': '.lib',
-    'SharedLib': '.dll'
-};
-
-const subsystemMap: any = {
-    'ConsoleApp': 'Console',
-    'StaticLib': 'Windows',
-    'SharedLib': 'Windows'
-};
-
-const itemTypeExtensionMap: any = {
-    'ClInclude': [
-        '.h',
-        '.hh',
-        '.hpp',
-        '.hxx',
-        '.tpp',
-    ],
-    'ClCompile': [
-        '.c',
-        '.cc',
-        '.cpp',
-        '.cxx',
-        '.cppm',
-        '.ixx'
-    ]
-};
-
-const optimizationMap: any = {
-    'Off': 'Disabled',
-    'On': 'MaxSpeed',
-    'Speed': 'MaxSpeed',
-    'Size': 'MinSpace',
-    'Full': 'Full'
-};
-
-const warningLevelMap: any = {
-    'Off': 'TurnOffAllWarnings',
-    'High': 'Level3',
-    'Extra': 'Level4',
-    'Everything': 'EnableAllWarnings',
-    'Default': 'Level3'
-};
-
-const runtimeMap: any = {
-    'Debug': {
-        'Off': 'MultiThreadedDebugDLL',
-        'On': 'MultiThreadedDebug'
-    },
-    'Release': {
-        'Off': 'MultiThreadedDLL',
-        'On': 'MultiThreaded'
-    }
-}
-
-const versionMap: any = {
-    'C': {
-        'C11': 'stdc11',
-        'C17': 'stdc17'
-    },
-    'C++': {
-        'C++14': 'stdcpp14',
-        'C++17': 'stdcpp17',
-        'C++20': 'stdcpp20',
-        'C++Latest': 'stdcpplatest'
-    },
-}
-
-function writeConfigurationGroups(prj: DOMNode, writer: XmlWriter) {
+function writeConfigurationGroups(prj: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeNode("ItemGroup", { Label: "ProjectConfigurations" }, (writer: XmlWriter) => {
         prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
             writer.writeNode("ProjectConfiguration", { Include: `${node.configuration}|${node.platform}` }, (writer) => {
@@ -100,7 +22,7 @@ function writeConfigurationGroups(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writeGlobalPropertyGroup(prj: DOMNode, writer: XmlWriter) {
+function writeGlobalPropertyGroup(prj: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeNode("PropertyGroup", { Label: "Globals" }, (writer: XmlWriter) => {
         writer.writeContentNode("ProjectGuid", {}, `{${prj.uuid}}`);
         writer.writeContentNode("IgnoreWarningCompileDuplicatedFilename", {}, "true");
@@ -109,16 +31,16 @@ function writeGlobalPropertyGroup(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writeDefaultProps(_: DOMNode, writer: XmlWriter) {
+function writeDefaultProps(_: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeContentNode("Import", { Project: "$(VCTargetsPath)\\Microsoft.Cpp.Default.props" });
 }
 
-function writeProps(_: DOMNode, writer: XmlWriter) {
+function writeProps(_: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeContentNode("Import", { Project: "$(VCTargetsPath)\\Microsoft.Cpp.props" });
     writer.writeNode("ImportGroup", { Label: "ExtensionSettings" }, (_) => { });
 }
 
-function writeConfigurationProps(prj: DOMNode, writer: XmlWriter) {
+function writeConfigurationProps(prj: DOMNode, version: any, writer: XmlWriter) {
     const useDebugLibs = (cfg: DOMNode) => {
         const debugSymbols = cfg.debugSymbols;
         const config = cfg.configuration;
@@ -138,15 +60,17 @@ function writeConfigurationProps(prj: DOMNode, writer: XmlWriter) {
             Condition: `'$(Configuration)|$(Platform)'=='${cfg}|${platform}'`,
             Label: 'Configuration'
         }, (writer) => {
-            writer.writeContentNode("ConfigurationType", {}, kindMap[node.kind]);
+            let toolsetName = version.vcxproj.toolsets[node.toolset] || version.vcxproj.defaults.toolset;
+
+            writer.writeContentNode("ConfigurationType", {}, version.vcxproj.kind[node.kind].Name);
             writer.writeContentNode("UseDebugLibraries", {}, `${useDebugLibs(node)}`);
             writer.writeContentNode("CharacterSet", {}, "Unicode");
-            writer.writeContentNode("PlatformToolset", {}, toolsetNameMap[node.toolset || defaults.vs2022.vcxproj.defaults.toolset]);
+            writer.writeContentNode("PlatformToolset", {}, toolsetName);
         });
     });
 }
 
-function writePropertySheets(prj: DOMNode, writer: XmlWriter) {
+function writePropertySheets(prj: DOMNode, _version: any, writer: XmlWriter) {
     prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
         writer.writeNode("ImportGroup", {
             Label: "PropertySheets",
@@ -163,13 +87,13 @@ function writePropertySheets(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writePropertyLinkerConfiguration(prj: DOMNode, writer: XmlWriter) {
+function writePropertyLinkerConfiguration(prj: DOMNode, version: any, writer: XmlWriter) {
     prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
         const linkIncremental = node.configuration === 'Debug';
         const intDir: string = node.intermediateDirectory || 'obj';
         const binDir: string = node.targetDirectory || 'bin';
         const targetName = node.targetName || prj.getName();
-        const targetExt = node.targetExt || targetExtensionMap[node.kind];
+        const targetExt = node.targetExt || version.vcxproj.kind[node.kind].Extension;
 
         writer.writeNode("PropertyGroup", {
             Condition: `'$(Configuration)|$(Platform)'=='${node.configuration}|${node.platform}'`
@@ -183,7 +107,7 @@ function writePropertyLinkerConfiguration(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
+function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter) {
     prj.getChildren().filter((node) => node.apiName === 'when').forEach((node) => {
         writer.writeNode("ItemDefinitionGroup", {
             Condition: `'$(Configuration)|$(Platform)'=='${node.configuration}|${node.platform}'`
@@ -192,7 +116,7 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
                 writer.writeContentNode("PrecompiledHeader", {}, "NotUsing"); // TODO: Search for PCH
 
                 const warningLevel = node.warnings || 'Default';
-                writer.writeContentNode("WarningLevel", {}, warningLevelMap[warningLevel]);
+                writer.writeContentNode("WarningLevel", {}, version.vcxproj.warningLevel[warningLevel]);
 
                 const defines: string[] = node.defines || [];
                 defines.push("%(PreprocessorDefinitions)");
@@ -209,7 +133,7 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
 
                 const optimize = node.optimize;
                 if (optimize) {
-                    const flag = optimizationMap[optimize];
+                    const flag = version.vcxproj.optimizations[optimize];
                     writer.writeContentNode("Optimization", {}, flag);
                 }
 
@@ -221,24 +145,24 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
 
                 const staticRt = node.staticRuntime || 'Off';
                 const runtime = node.runtime || 'Release';
-                writer.writeContentNode("RuntimeLibrary", {}, runtimeMap[runtime][staticRt]);
+                writer.writeContentNode("RuntimeLibrary", {}, version.vcxproj.runtimes[runtime][staticRt]);
 
                 writer.writeContentNode("MultiProcessorCompilation", {}, "true");
                 const langVersion = prj.languageVersion;
                 if (prj.language === 'C++') {
-                    writer.writeContentNode("LanguageStandard", {}, versionMap['C++'][langVersion || defaults.vs2022.vcxproj.defaults.cppversion]);
+                    writer.writeContentNode("LanguageStandard", {}, version.vcxproj.versions['C++'][langVersion || defaults.vs2022.vcxproj.defaults.cppversion]);
                 } else if (prj.language === 'C') {
-                    writer.writeContentNode("LanguageStandard_C", {}, versionMap['C'][langVersion || defaults.vs2022.vcxproj.defaults.cversion]);
+                    writer.writeContentNode("LanguageStandard_C", {}, version.vcxproj.versions['C'][langVersion || defaults.vs2022.vcxproj.defaults.cversion]);
                 } else {
                     throw new Error(`Unsupported language: ${prj.language}`);
                 }
 
                 const externalWarningLevel = node.externalWarnings || 'Default';
-                writer.writeContentNode("ExternalWarningLevel", {}, warningLevelMap[externalWarningLevel]);
+                writer.writeContentNode("ExternalWarningLevel", {}, version.vcxproj.warningLevel[externalWarningLevel]);
             });
 
             writer.writeNode("Link", {}, (writer) => {
-                writer.writeContentNode("SubSystem", {}, subsystemMap[node.kind]);
+                writer.writeContentNode("SubSystem", {}, version.vcxproj.kind[node.kind].Subsystem);
 
                 const symbols = node.symbols;
                 if (symbols && symbols !== 'Off') {
@@ -272,12 +196,12 @@ function writeItemDefinitionGroups(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writeFiles(prj: DOMNode, writer: XmlWriter) {
+function writeFiles(prj: DOMNode, version: any, writer: XmlWriter) {
     writer.writeNode("ItemGroup", {}, (writer) => {
         const includes = new Set(prj.getAllNodes().flatMap(node => {
             return (node.inputFiles || []).filter((file: string) => {
                 const extension = extname(file);
-                return itemTypeExtensionMap.ClInclude.includes(extension);
+                return version.vcxproj.extensions.Headers.includes(extension);
             });
         }));
         includes.forEach((file: string) => {
@@ -304,7 +228,7 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
         const sources = new Set(prj.getAllNodes().flatMap(node => {
             return (node.inputFiles || []).filter((file: string) => {
                 const extension = extname(file);
-                return itemTypeExtensionMap.ClCompile.includes(extension);
+                return version.vcxproj.extensions.Compiled.includes(extension);
             });
         }));
         sources.forEach((file: string) => {
@@ -327,7 +251,7 @@ function writeFiles(prj: DOMNode, writer: XmlWriter) {
     });
 }
 
-function writeProjectReferences(prj: DOMNode, writer: XmlWriter) {
+function writeProjectReferences(prj: DOMNode, _version: any, writer: XmlWriter) {
     const deps: DOMNode[] = prj.__deps || [];
     if (deps.length > 0) {
         writer.writeNode("ItemGroup", {}, (writer) => {
@@ -344,15 +268,32 @@ function writeProjectReferences(prj: DOMNode, writer: XmlWriter) {
     }
 }
 
-function writeProjectTargets(_: DOMNode, writer: XmlWriter) {
+function writeProjectTargets(_: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeContentNode("Import", { Project: "$(VCTargetsPath)\\Microsoft.Cpp.targets" });
 }
 
-function writeExtensionTargets(_: DOMNode, writer: XmlWriter) {
+function writeExtensionTargets(_: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeNode("ImportGroup", { Label: "ExtensionTargets" }, (_) => { });
 }
 
-export function vcxproj(prj: DOMNode) {
+type VcxProjFunc = (prj: DOMNode, version: any, writer: XmlWriter) => void;
+
+export const functionArray: Array<VcxProjFunc> = [
+    writeConfigurationGroups,
+    writeGlobalPropertyGroup,
+    writeDefaultProps,
+    writeConfigurationProps,
+    writeProps,
+    writePropertySheets,
+    writePropertyLinkerConfiguration,
+    writeItemDefinitionGroups,
+    writeFiles,
+    writeProjectReferences,
+    writeProjectTargets,
+    writeExtensionTargets,
+];
+
+export function vcxproj(prj: DOMNode, args: ExporterArguments) {
     if (prj.apiName !== 'project') {
         throw new Error(`[vstudio] Expected DOMNode of scope project. Received DOMNode of type ${prj.apiName}.`);
     }
@@ -360,20 +301,10 @@ export function vcxproj(prj: DOMNode) {
     const prjFileLocation = join(prj.location, `${prj.getName()}.vcxproj`);
 
     const file = new XmlWriter(prjFileLocation);
+    const version = versions[args.version] || versions.default;
 
     file.writeNode("Project", { DefaultTargets: "Build", xmlns: "http://schemas.microsoft.com/developer/msbuild/2003" }, (writer) => {
-        writeConfigurationGroups(prj, writer);
-        writeGlobalPropertyGroup(prj, writer);
-        writeDefaultProps(prj, writer);
-        writeConfigurationProps(prj, writer);
-        writeProps(prj, writer);
-        writePropertySheets(prj, writer);
-        writePropertyLinkerConfiguration(prj, writer);
-        writeItemDefinitionGroups(prj, writer);
-        writeFiles(prj, writer);
-        writeProjectReferences(prj, writer);
-        writeProjectTargets(prj, writer);
-        writeExtensionTargets(prj, writer);
+        functionArray.forEach(fn => fn(prj, version, writer));
     });
 
     file.close();

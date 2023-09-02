@@ -188,6 +188,6 @@ export function workspace(wks: DOMNode, args: ExporterArguments) {
 
     projects.forEach((prj) => {
         const exporter = projectExporterMapper[prj.language];
-        exporter(prj);
+        exporter(prj, args);
     });
 }
