@@ -3,7 +3,9 @@
     "references": [
       { "path": "packages/core" },
       { "path": "packages/cli" },
+      { "path": "packages/modules/exporters/ninja" },
       { "path": "packages/modules/exporters/vstudio" },
+      { "path": "packages/modules/toolsets/clang" },
       { "path": "packages/modules/toolsets/msc" }
     ]
   }

@@ -7,6 +7,7 @@ import { run } from "cmd-ts/dist/cjs/runner";
 import { string } from "cmd-ts/dist/cjs/types";
 
 // Load all the core modules
+require("@conjure/ninja");
 require("@conjure/vstudio");
 require("@conjure/clang");
 require("@conjure/msc");

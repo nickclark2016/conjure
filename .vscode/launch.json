@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Conjure Example Project",
+            "name": "Conjure Visual Studio Example Project",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -17,6 +17,20 @@
                 "${workspaceFolder}/**/*.js"
             ],
             "args": [ "vstudio", "-p=./examples/conjure.js" ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Conjure Ninja Example Project",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}\\packages\\cli\\src\\index.ts",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "args": [ "ninja", "-p=./examples/conjure.js" ]
         }
     ]
 }

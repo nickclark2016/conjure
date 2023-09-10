@@ -12,6 +12,7 @@
   "workspaces": [
     "packages/cli",
     "packages/core",
+    "packages/modules/exporters/ninja",
     "packages/modules/exporters/vstudio",
     "packages/modules/toolsets/clang",
     "packages/modules/toolsets/msc"
