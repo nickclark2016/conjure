@@ -21,6 +21,8 @@ export interface FilterContext {
     architecture: string;
     toolset: string;
     pathToWorkspace: string;
+    project: any;
+    workspace: any;
 }
 
 export type Filter = {

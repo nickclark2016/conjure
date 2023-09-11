@@ -14,6 +14,28 @@ export type BakeArgs = {
     architecture: string
 };
 
+function getProject(node: DOMNode): DOMNode | null {
+    let current: DOMNode | null = node;
+    while (current) {
+        if (current.apiName === 'project') {
+            return current;
+        }
+        current = current.getParent();
+    }
+    return null;
+}
+
+function getWorkspace(node: DOMNode): DOMNode | null {
+    let current: DOMNode | null = node;
+    while (current) {
+        if (current.apiName === 'workspace') {
+            return current;
+        }
+        current = current.getParent();
+    }
+    return null;
+}
+
 function bakeLocation(node: DOMNode) {
     const scriptLocation = node.scriptLocation;
     const scriptDirectory = scriptLocation;
@@ -128,7 +150,7 @@ function bakeWorkspaceConfig(wks: DOMNode, args: BakeArgs) {
         const tmp = new DOMNode("temp", wks);
         const old = State.get().activate(tmp);
 
-        filter.callback({ ...criteria, pathToWorkspace: filter.pathToWorkspace });
+        filter.callback({ ...criteria, pathToWorkspace: filter.pathToWorkspace, project: null, workspace: wks });
 
         State.get().activate(old);
         wks.removeChild(tmp);
@@ -214,6 +236,8 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
                 architecture: args.architecture || node.architecture || parent.architecture,
                 toolset: node.toolset || parent.toolset,
                 pathToWorkspace: filter.pathToWorkspace,
+                project: getProject(parent),
+                workspace: getWorkspace(parent)
             });
 
             node.scriptLocation = filter.scriptLocation;
@@ -351,7 +375,7 @@ function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
                 callback: filter.callback,
                 scriptLocation: relative(node.absoluteScriptLocation, filter.absoluteScriptPath),
                 absoluteScriptPath: filter.absoluteScriptPath,
-                pathToWorkspace: join(relative(filter.absoluteScriptPath, node.absoluteScriptLocation), filter.pathToWorkspace)
+                pathToWorkspace: filter.pathToWorkspace
             });
         });
         node.filters = existingFilters;

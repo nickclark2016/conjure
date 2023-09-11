@@ -11,4 +11,11 @@ workspace('ryujin', (wks) => {
 
     include('./library/conjure.js');
     include('./executable/conjure.js');
+
+    block('common', (_) => {
+        when({}, (ctx) => {
+            targetDirectory(`${ctx.pathToWorkspace}/bin/${ctx.platform}/${ctx.configuration}`);
+            intermediateDirectory(`${ctx.pathToWorkspace}/bin-int/${ctx.platform}/${ctx.configuration}/${ctx.project.getName()}`);
+        });
+    });
 });

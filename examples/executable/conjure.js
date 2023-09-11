@@ -16,5 +16,5 @@ project('executable', (prj) => {
         optimize('On');
     });
 
-    uses([ 'library:public' ]);
+    uses([ 'library:public', 'common' ]);
 });
