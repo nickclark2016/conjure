@@ -57,6 +57,24 @@ export function pathToWorkspace(node: DOMNode): string {
     return path;
 }
 
+export function pathFromWorkspace(node: DOMNode): string {
+    let it: DOMNode | null = node;
+    while (it && it.apiName !== 'workspace') {
+        it = it.getParent();
+    }
+    if (!it) {
+        throw new Error(`Failed to get workspace owning node ${node.getName()}.`);
+    }
+    
+    const myPath = node.absoluteScriptLocation;
+    const wksPath = it.absoluteScriptLocation;
+    const path = relative(wksPath, myPath);
+    if (path === "") {
+        return ".";
+    }
+    return path;
+}
+
 function buildFunctor(info: ScopeAPIInfo) {
     const fn = function(label: any, callback: any) {
         const ctx = info.ctxAccumulator(label);

@@ -9,6 +9,7 @@ node_modules/**
 **Makefile
 **.make
 **.ninja
+**.ninja_log
 
 **/bin
 **/bin-int

@@ -5,6 +5,7 @@ export class TextWriter {
 
     private readonly _output: WriteStream;
     private _indent: number = 0;
+    private _indentChar: string = '\t';
 
     constructor(path: string) {
         this._output = createWriteStream(path, {
@@ -12,8 +13,16 @@ export class TextWriter {
         });
     }
 
+    useSpaceIndent(count: number) {
+        this._indentChar = new Array(count).fill(' ').join('');
+    }
+
+    useTabIndent() {
+        this._indentChar = '\t';
+    }
+
     write(line: string): void {
-        const indent = new Array(this._indent).fill('\t').join('');
+        const indent = new Array(this._indent).fill(this._indentChar).join('');
         this._output.write(`${indent}${line}${EOL}`);
     }
 
