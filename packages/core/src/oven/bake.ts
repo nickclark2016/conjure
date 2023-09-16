@@ -14,6 +14,28 @@ export type BakeArgs = {
     architecture: string
 };
 
+function getProject(node: DOMNode): DOMNode | null {
+    let current: DOMNode | null = node;
+    while (current) {
+        if (current.apiName === 'project') {
+            return current;
+        }
+        current = current.getParent();
+    }
+    return null;
+}
+
+function getWorkspace(node: DOMNode): DOMNode | null {
+    let current: DOMNode | null = node;
+    while (current) {
+        if (current.apiName === 'workspace') {
+            return current;
+        }
+        current = current.getParent();
+    }
+    return null;
+}
+
 function bakeLocation(node: DOMNode) {
     const scriptLocation = node.scriptLocation;
     const scriptDirectory = scriptLocation;
@@ -59,7 +81,7 @@ function bakeInheritedProperties(node: DOMNode) {
     });
 }
 
-function cartesianProduct<Type>(sets: Type[][]): Type[][] {
+export function cartesianProduct<Type>(sets: Type[][]): Type[][] {
     return sets.reduce<Type[][]>(
         (results, ids) =>
             results
@@ -138,7 +160,7 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
 
         const filters: Filter[] = parent.filters || [];
 
-        filters.forEach((filter: Filter) => {
+    filters.forEach((filter: Filter) => {
             // Cannot use filter, as it's neeeded process these sequentially, not in stages. This allows previous filters to
             // apply changes for future defined filters
             if (!filterMatch(filter, {
@@ -152,14 +174,20 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
             const tmp = new DOMNode("temp", parent);
             const old = State.get().activate(tmp);
 
-            filter.callback({
-                platform,
-                configuration,
-                system: args.system || node.architecture || parent.system,
-                architecture: args.architecture || node.architecture || parent.architecture,
-                toolset: node.toolset || parent.toolset,
-                pathToWorkspace: filter.pathToWorkspace,
-            });
+            try {
+                filter.callback({
+                    platform,
+                    configuration,
+                    system: args.system || node.architecture || parent.system,
+                    architecture: args.architecture || node.architecture || parent.architecture,
+                    toolset: node.toolset || parent.toolset,
+                    pathToWorkspace: filter.pathToWorkspace,
+                    project: getProject(parent),
+                    workspace: getWorkspace(parent),
+                });
+            } catch (e) {
+                console.error(`Failed to parse ${node.getName()}`);
+            }
 
             node.scriptLocation = filter.scriptLocation;
             if (!node.__locationBaked) {
@@ -294,7 +322,7 @@ function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
                 callback: filter.callback,
                 scriptLocation: relative(node.absoluteScriptLocation, filter.absoluteScriptPath),
                 absoluteScriptPath: filter.absoluteScriptPath,
-                pathToWorkspace: join(relative(filter.absoluteScriptPath, node.absoluteScriptLocation), filter.pathToWorkspace)
+                pathToWorkspace: filter.pathToWorkspace
             });
         });
         node.filters = existingFilters;

@@ -19,5 +19,5 @@ describe('Clang Toolset Tests', () => {
         const ts = ToolsetRegistry.get().fetch('clang');
         expect(ts).not.toBeNull();
         expect(ts?.mapFlag('defines', 'DEF')).toBe('-DDEF');
-    })
+    });
 });

@@ -10,6 +10,7 @@ node_modules/**
 **.make
 **.ninja
 **.ninja_log
+**.ninja_deps
 
 **/bin
 **/bin-int

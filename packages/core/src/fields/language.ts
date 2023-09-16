@@ -8,7 +8,7 @@ const languageApiInfo: FieldAPIInfo = {
     allowedInScopes: ['project', 'block'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: false,
+    inherited: true,
     isFiles: false
 };
 
@@ -19,7 +19,7 @@ const languageVersionApiInfo: FieldAPIInfo = {
     allowedInScopes: ['project', 'block'],
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Replace,
-    inherited: false,
+    inherited: true,
     isFiles: false
 };
 

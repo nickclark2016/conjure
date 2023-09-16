@@ -1,3 +1,4 @@
+import { DOMNode } from "../dom";
 import { FieldRegistry } from "../fields";
 
 /**
@@ -37,6 +38,13 @@ export interface Toolset {
      * @returns Value of string mapped for the given flag
      */
     mapFlag: (name: string, value: string) => string;
+}
+
+export interface CppToolset extends Toolset {
+    getCFlags: (cfg: DOMNode) => string[];
+    getCppFlags: (cfg: DOMNode) => string[];
+    getCxxFlags: (cfg: DOMNode) => string[];
+    getLinkFlags: (cfg: DOMNode) => string[];
 }
 
 /**

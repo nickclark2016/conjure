@@ -75,6 +75,16 @@ export function pathFromWorkspace(node: DOMNode): string {
     return path;
 }
 
+export function pathTo(src: DOMNode, dst: DOMNode) {
+    const toWks = pathToWorkspace(src);
+    const toPrj = pathFromWorkspace(dst);
+    const path = join(toWks, toPrj);
+    if (path === "") {
+        return ".";
+    }
+    return path;
+}
+
 function buildFunctor(info: ScopeAPIInfo) {
     const fn = function(label: any, callback: any) {
         const ctx = info.ctxAccumulator(label);

@@ -9,7 +9,8 @@ const libraryDirsApiInfo: FieldAPIInfo = {
     acceptedArguments: [],
     acceptBehavior: APIBehaviorOnAccept.Merge,
     inherited: true,
-    isFiles: true
+    isFiles: true,
+    default: [],
 };
 
 FieldRegistry.get().register(libraryDirsApiInfo);

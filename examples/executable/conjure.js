@@ -20,5 +20,5 @@ project('executable', (prj) => {
         files([ 'windows.cpp' ]);
     });
 
-    uses([ 'library:public' ]);
+    uses([ 'library:public', 'example' ]);
 });

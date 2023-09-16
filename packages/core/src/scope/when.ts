@@ -5,6 +5,7 @@ import { createMatcher } from "./parser/matcher";
 import { ExpressionParser, FormulaLexer } from "./parser";
 import { join } from "path";
 import { pathToWorkspace } from "./scope";
+import { DOMNode } from "../dom";
 
 export interface FilterTest {
     platform: string;
@@ -21,6 +22,8 @@ export interface FilterContext {
     architecture: string;
     toolset: string;
     pathToWorkspace: string;
+    project: any;
+    workspace: any;
 }
 
 export type Filter = {

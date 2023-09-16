@@ -22,10 +22,6 @@ group('group', (grp) => {
             intermediateDirectory(`${ctx.pathToWorkspace}/bin-int/${ctx.platform}/${prj.name}/${ctx.configuration}`);
         });
 
-        when({ system: 'windows' }, () => {
-            toolset('clang');
-        });
-
         when({ toolset: 'clang' }, () => {
             includeDirs([
                 './ClangInc'
