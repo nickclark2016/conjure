@@ -123,8 +123,13 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
                 writer.writeContentNode("PreprocessorDefinitions", {}, defines.join(";"));
 
                 const includes: string[] = node.includeDirs || [];
-                includes.push("%(AdditionalIncludeDirectories)")
+                includes.push("%(AdditionalIncludeDirectories)");
                 writer.writeContentNode("AdditionalIncludeDirectories", {}, includes.join(";"));
+
+                const externalIncludes: string[] = node.externalIncludeDirs || [];
+                if (externalIncludes.length > 0) {
+                    writer.writeContentNode(version.externalIncludesSupported ? "ExternalIncludePath" : "IncludePath", {}, includes.join(";"));
+                }
 
                 const symbols = node.symbols;
                 if (symbols && symbols !== 'Off') {

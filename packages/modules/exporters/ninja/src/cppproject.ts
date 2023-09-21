@@ -18,7 +18,7 @@ function writeRequiredVersion(_prj: DOMNode, _cfg: DOMNode, _args: ExporterArgum
     writer.write('');
 }
 
-function writeCCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writeCCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
     const defines: string[] = cfg.defines || [];
     const includes: string[] = cfg.includeDirs || [];
@@ -43,16 +43,25 @@ function writeCCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, 
     writer.write(`CFLAGS = ${cflags.join(' ')}`);
     writer.write('rule cc');
     writer.indent();
-    writer.write(`command = ${cc} $CFLAGS /nologo /showIncludes -c /Tc$in /Fo:$out`);
-    writer.write(`description = cc $out`);
     if (toolset.name === 'msc') {
+        if (cfg.symbols === 'On') {
+            writer.write(`command = ${cc} $CFLAGS /Fd$pdb /nologo /showIncludes -c /Tc$in /Fo:$out`);
+        } else {
+            writer.write(`command = ${cc} $CFLAGS /nologo /showIncludes -c /Tc$in /Fo:$out`);
+        }
+        writer.write(`description = cc $out`);
         writer.write(`deps = msvc`);
+    } else {
+        writer.write(`command = ${cc} $CFLAGS -x c -MF $out.d -c -o $out $in`);
+        writer.write(`description = cc $out`);
+        writer.write(`depfile = $out.d`);
+        writer.write(`deps = gcc`);
     }
     writer.outdent();
     writer.write('');
 }
 
-function writeCxxCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writeCxxCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
     const defines: string[] = cfg.defines || [];
     const includes: string[] = cfg.includeDirs || [];
@@ -77,14 +86,27 @@ function writeCxxCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArguments
     writer.write(`CXXFLAGS = ${cxxflags.join(' ')}`);
     writer.write('rule cxx');
     writer.indent();
-    writer.write(`command = ${cxx} $CXXFLAGS /nologo /showIncludes -c /Tp$in /Fo:$out`);
-    writer.write(`description = cxx $out`);
-    writer.write(`deps = msvc`);
+
+    if (toolset.name === 'msc') {
+        if (cfg.symbols === 'On') {
+            writer.write(`command = ${cxx} $CXXFLAGS /Fd$pdb /nologo /showIncludes -c /Tp$in /Fo:$out`);
+        } else {
+            writer.write(`command = ${cxx} $CXXFLAGS /nologo /showIncludes -c /Tp$in /Fo:$out`);
+        }
+        writer.write(`description = cxx $out`);
+        writer.write(`deps = msvc`);
+    } else {
+        writer.write(`command = ${cxx} $CXXFLAGS -x c++ -MF $out.d -c -o $out $in`);
+        writer.write(`description = cxx $out`);
+        writer.write(`depfile = $out.d`);
+        writer.write(`deps = gcc`);
+    }
+
     writer.outdent();
     writer.write('');
 }
 
-function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
 
     const isArchive = cfg.kind === 'StaticLib';
@@ -130,33 +152,38 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, args: ExporterArgument
     cfg.libraryDirs = [...new Set(cfg.libraryDirs)];
 
     const linkFlags = toolset.getLinkFlags(cfg) || [];
-    if (prj.kind === 'SharedLib') {
-        linkFlags.push('/link');
-    }
-
-    const needsImpLib = cfg.kind === 'SharedLib';
-    if (needsImpLib) {
-        
-    }
 
     writer.write(`LINKFLAGS = ${linkFlags.join(' ').trim()}`);
     writer.write('rule link');
     writer.indent();
-    if (isArchive) {
-        writer.write(`command = ${linker} $in $LINKFLAGS /out:$out`);
-        writer.write(`description = link $out`);
-    } else if (cfg.kind === 'SharedLib') {
-        writer.write(`command = ${linker} /LD $in $LINKFLAGS ${links.join(' ').trim()} /IMPLIB:$import /out:$out`);
-        writer.write(`description = link $out`);
+
+    if (toolset.name === 'msc') {
+        if (isArchive) {
+            writer.write(`command = ${linker} $in /nologo -OUT:$out`);
+            writer.write(`description = ar $out`);
+        } else {
+            if (cfg.symbols === 'On') {
+                writer.write(`command = ${linker} $in /link $LINKFLAGS ${links.join(' ').trim()} /nologo /out:$out /PDB:$pdb`);
+            } else {
+                writer.write(`command = ${linker} $in /link $LINKFLAGS ${links.join(' ').trim()} /nologo /out:$out`);
+            }
+            writer.write(`description = link $out`);
+        }
     } else {
-        writer.write(`command = ${linker} $in $LINKFLAGS ${links.join(' ').trim()} /out:$out`);
-        writer.write(`description = link $out`);
+        if (isArchive) {
+            writer.write(`command = ${linker} rcs $out $in`);
+            writer.write(`description = ar $out`);
+        } else {
+            writer.write(`command = ${linker} -o $out $in $LINKFLAGS ${links.join(' ').trim()}`);
+            writer.write(`description = link $out`);
+        }
     }
+
     writer.outdent();
     writer.write('');
 }
 
-function writeFiles(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writeFiles(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
     const intDir: string = cfg.intermediateDirectory || join(`obj`, cfg.platform, cfg.configuration);
 
@@ -169,6 +196,12 @@ function writeFiles(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer:
         }
     })();
 
+    const targetDir = join(base, intDir);
+    const pdbPath = join(targetDir, `${prj.getName()}.pdb`);
+
+    writer.indent();
+    writer.outdent();
+
     files.forEach(file => {
         const language = Ninja.determineLanguage(file);
         if (language) {
@@ -178,6 +211,11 @@ function writeFiles(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer:
                 const path = join(base, intDir, intermediate);
                 const fullPath = join(base, file);
                 writer.write(`build ${path}: ${rule} ${fullPath}`);
+                if (cfg.symbols === 'On') {
+                    writer.indent();
+                    writer.write(`pdb = ${pdbPath}`);
+                    writer.outdent();
+                }
             } else {
                 console.warn(`Failed to find rule for language: ${language}`);
             }
@@ -186,7 +224,7 @@ function writeFiles(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer:
     writer.write('');
 }
 
-function writeOutputs(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writeOutputs(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
     const intDir: string = cfg.intermediateDirectory || join(`obj`, cfg.platform, cfg.configuration);
 
@@ -208,22 +246,42 @@ function writeOutputs(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, write
     }));
 
     const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : prj.targetDirectory ? join(base, prj.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
-    const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
+    const targetPath = join(targetDir, `${prj.getName()}${toolset.name === 'msc' ? toolset.mapFlag('targetExtension', cfg.kind) : ''}`);
 
-    const deps = getAllDependencies(cfg).map(dep => `${dep.getName()}_${cfg.configuration}_${cfg.platform}`);
+    const deps = getAllDependencies(prj).map(depPrj => {
+        if (depPrj) {
+            const depTargetCfg = depPrj.getChildren().find(flt => flt.platform === cfg.platform && flt.configuration === cfg.configuration);
+            if (depTargetCfg) {
+                const base = (() => {
+                    try {
+                        return pathFromWorkspace(depTargetCfg);
+                    } catch (e) {
+                        return pathFromWorkspace(depPrj);
+                    }
+                })();
+
+                const toLibFromDep = join(base, depTargetCfg.targetDirectory);
+                const targetName = `${depPrj.getName()}${toolset.mapFlag('targetExtension', depPrj.kind)}`;
+                if (depPrj.kind === 'StaticLib' || depPrj.kind === 'SharedLib') {
+                    return join(toLibFromDep, targetName);
+                }
+            }
+        }
+    });
+
     const depString = deps.length > 0 ? `| ${deps.join(' ')}` : ''
 
     writer.write(`build ${targetPath}: link ${[...ints].join(' ')} ${depString}`);
-    if (prj.kind === 'SharedLib') {
+    if (cfg.symbols === 'On' && toolset.name === 'msc') {
+        const pdbPath = join(targetDir, `${prj.getName()}.pdb`);
         writer.indent();
-        writer.write(`import = ${join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', 'StaticLib')}`)}`)
+        writer.write(`pdb = ${pdbPath}`);
         writer.outdent();
     }
-
     writer.write('');
 }
 
-function writePhonies(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, writer: TextWriter) {
+function writePhonies(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
 
     writer.write(`# Build Phonies`);
@@ -240,7 +298,6 @@ function writePhonies(prj: DOMNode, cfg: DOMNode, args: ExporterArguments, write
     const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
 
     writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony ${targetPath}`);
-
     writer.write('');
 }
 

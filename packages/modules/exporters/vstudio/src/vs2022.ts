@@ -1,6 +1,7 @@
 export const vs2022: any = {
     version: '2022',
     vcxproj: {
+        externalIncludesSupported: true,
         defaults: {
             cppversion: 'C++20',
             cversion: 'C11',

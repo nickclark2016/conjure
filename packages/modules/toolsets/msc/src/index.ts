@@ -11,6 +11,13 @@ const shared = {
         'C': '/TC',
         'C++': '/TP',
     },
+    externalWarnings: {
+        Off: '/external:W0',
+        High: '/external:W3',
+        Extra: '/external:W4',
+        Everything: '/external:Wall',
+        Default: '/external:W3',
+    },
     optimize: {
         Off: '/Od',
         On: '/Ot',
@@ -18,20 +25,23 @@ const shared = {
         Size: '/O1',
         Full: '/Ox',
     },
-    warningLevel: {
+    symbols: {
+        On: '/ZI /FS',
+    },
+    warnings: {
         Off: '/W0',
         High: '/W3',
         Extra: '/W4',
         Everything: '/Wall',
         Default: '/W3',
-    }
+    },
 }
 
 const cFlags = {
     languageVersion: {
         'C11': '/std:c11',
         'C17': '/std:c17',
-    }
+    },
 }
 
 const cxxFlags = {
@@ -90,7 +100,7 @@ const flagMapping: any = {
             return '.dll';
         }
         return undefined;
-    }
+    },
 };
 
 class MSCToolset implements CppToolset {
@@ -105,7 +115,7 @@ class MSCToolset implements CppToolset {
         if (type === 'compiler') {
             return 'cl';
         } else if (type === 'linker') {
-            return 'lib';
+            return 'cl';
         } else if (type === 'archive') {
             return 'lib';
         }
@@ -126,6 +136,7 @@ class MSCToolset implements CppToolset {
         const flags = keys.filter(key => cfg[key] !== undefined).map(key => {
             return flagTable[key][cfg[key]];
         }).filter(flag => flag !== null && flag !== undefined);
+
         return flags;
     }
 
@@ -175,16 +186,12 @@ class MSCToolset implements CppToolset {
             "odbccp32.lib",
         ];
 
-        const needsDefaultLibs = cfg.kind === 'ConsoleApp' || cfg.kind === 'SharedLib';
+        const isNotArchive = cfg.kind === 'ConsoleApp' || cfg.kind === 'SharedLib';
 
-        const flags = ['/nologo', ...libDirFlags, ...(needsDefaultLibs ? defaultLibs : []), ...linkerFlags].filter(flag => flag);
-        if (cfg.kind === 'ConsoleApp') {
-            flags.unshift('/link');
-            if (cfg.runtime === 'Debug') {
-                flags.unshift('/DEBUG');
-            }
+        const flags = ['/nologo', ...libDirFlags, ...(isNotArchive ? defaultLibs : []), ...linkerFlags].filter(flag => flag);
+        if (isNotArchive && cfg.symbols === 'On') {
+            flags.push('/DEBUG');
         }
-
         return flags;
     }
 };
