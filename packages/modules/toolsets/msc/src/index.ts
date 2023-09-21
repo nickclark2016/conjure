@@ -61,6 +61,12 @@ const linkFlags = {
     },
 };
 
+const machine: any = {
+    'x86': 'X86',
+    'Win32': 'X86',
+    'x64': 'X64',
+};
+
 const runtimes: any = {
     Debug: {
         Off: '/MDd',
@@ -188,10 +194,22 @@ class MSCToolset implements CppToolset {
 
         const isNotArchive = cfg.kind === 'ConsoleApp' || cfg.kind === 'SharedLib';
 
-        const flags = ['/nologo', ...libDirFlags, ...(isNotArchive ? defaultLibs : []), ...linkerFlags].filter(flag => flag);
-        if (isNotArchive && cfg.symbols === 'On') {
-            flags.push('/DEBUG');
-        }
+        const flags = (() => {
+            if (cfg.kind === 'StaticLib') {
+                return [];
+            }
+
+            const flags = ['/nologo', ...libDirFlags, ...defaultLibs, ...linkerFlags].filter(flag => flag);
+            if (isNotArchive && cfg.symbols === 'On') {
+                flags.push('/DEBUG');
+            }
+            return flags;
+        })();
+
+        const arch = `/MACHINE:${machine[cfg.platform]}`;
+
+        flags.push(arch);
+
         return flags;
     }
 };

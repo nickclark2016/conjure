@@ -159,7 +159,7 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
 
     if (toolset.name === 'msc') {
         if (isArchive) {
-            writer.write(`command = ${linker} $in /nologo -OUT:$out`);
+            writer.write(`command = ${linker} $in /nologo $LINKFLAGS -OUT:$out`);
             writer.write(`description = ar $out`);
         } else {
             if (cfg.symbols === 'On') {
