@@ -12,7 +12,7 @@ describe('Clang Toolset Tests', () => {
     test('Test External Include Directories', () => {
         const ts = ToolsetRegistry.get().fetch('clang');
         expect(ts).not.toBeNull();
-        expect(ts?.mapFlag('externalIncludeDirs', 'inc')).toBe('-isystem inc');
+        expect(ts?.mapFlag('externalIncludeDirs', 'inc')).toBe('-isysteminc');
     });
 
     test('Test Defines', () => {
