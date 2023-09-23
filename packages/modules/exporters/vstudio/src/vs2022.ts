@@ -25,7 +25,7 @@ export const vs2022: any = {
                 Subsystem: 'Windows',
             },
             SharedLib: {
-                Name: 'Application',
+                Name: 'DynamicLibrary',
                 Extension: '.dll',
                 Subsystem: 'Windows',
             },

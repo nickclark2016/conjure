@@ -103,6 +103,11 @@ function writePropertyLinkerConfiguration(prj: DOMNode, version: any, writer: Xm
             writer.writeContentNode("IntDir", {}, `${intDir}\\`);
             writer.writeContentNode("TargetName", {}, targetName);
             writer.writeContentNode("TargetExt", {}, targetExt);
+
+            const externalIncludes: string[] = node.externalIncludeDirs || [];
+            if (externalIncludes.length > 0) {
+                writer.writeContentNode(version.vcxproj.externalIncludesSupported ? "ExternalIncludePath" : "IncludePath", {}, externalIncludes.join(";"));
+            }
         });
     });
 }
@@ -125,11 +130,6 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
                 const includes: string[] = node.includeDirs || [];
                 includes.push("%(AdditionalIncludeDirectories)");
                 writer.writeContentNode("AdditionalIncludeDirectories", {}, includes.join(";"));
-
-                const externalIncludes: string[] = node.externalIncludeDirs || [];
-                if (externalIncludes.length > 0) {
-                    writer.writeContentNode(version.externalIncludesSupported ? "ExternalIncludePath" : "IncludePath", {}, includes.join(";"));
-                }
 
                 const symbols = node.symbols;
                 if (symbols && symbols !== 'Off') {
