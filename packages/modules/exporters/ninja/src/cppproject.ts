@@ -52,7 +52,7 @@ function writeCCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments,
         writer.write(`description = cc $out`);
         writer.write(`deps = msvc`);
     } else {
-        writer.write(`command = ${cc} $CFLAGS -x c -MF $out.d -c -o $out $in`);
+        writer.write(`command = ${cc} $CFLAGS -x c -c -o $out $in`);
         writer.write(`description = cc $out`);
         writer.write(`depfile = $out.d`);
         writer.write(`deps = gcc`);
@@ -96,7 +96,7 @@ function writeCxxCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgument
         writer.write(`description = cxx $out`);
         writer.write(`deps = msvc`);
     } else {
-        writer.write(`command = ${cxx} $CXXFLAGS -x c++ -MF $out.d -c -o $out $in`);
+        writer.write(`command = ${cxx} $CXXFLAGS -x c++ -c -o $out $in`);
         writer.write(`description = cxx $out`);
         writer.write(`depfile = $out.d`);
         writer.write(`deps = gcc`);
@@ -141,7 +141,11 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
 
                 const toLibFromDep = join(base, depTargetCfg.targetDirectory);
                 const targetName = `${depPrj.getName()}${toolset.mapFlag('targetExtension', 'StaticLib')}`;
-                if (depPrj.kind === 'StaticLib' || depPrj.kind === 'SharedLib') {
+                if (depPrj.kind === 'StaticLib') {
+                    cfg.libraryDirs.push(toLibFromDep);
+                    links.push(toolset.mapFlag('linksStatic', targetName));
+                } else if (depPrj.kind === 'SharedLib') {
+                    // todo: handle dynamic linkage
                     cfg.libraryDirs.push(toLibFromDep);
                     links.push(targetName);
                 }
@@ -246,7 +250,7 @@ function writeOutputs(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writ
     }));
 
     const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : prj.targetDirectory ? join(base, prj.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
-    const targetPath = join(targetDir, `${prj.getName()}${toolset.name === 'msc' ? toolset.mapFlag('targetExtension', cfg.kind) : ''}`);
+    const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
 
     const deps = getAllDependencies(prj).map(depPrj => {
         if (depPrj) {

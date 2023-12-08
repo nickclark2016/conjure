@@ -21,7 +21,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Conjure Ninja Example Project",
+            "name": "Conjure Ninja Example Project - Windows",
             "skipFiles": [
                 "<node_internals>/**"
             ],
@@ -30,7 +30,21 @@
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
-            "args": [ "ninja", "-p=./examples/conjure.js" ]
+            "args": [ "ninja", "-p=./examples/conjure.js", "-s=Windows" ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Conjure Ninja Example Project - Linux",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/packages/cli/src/index.ts",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "args": [ "ninja", "-p=./examples/conjure.js", "-s=Linux" ]
         }
     ]
 }

@@ -59,12 +59,22 @@ const flagMapping: any = {
         return `-D${define}`;
     },
     linksStatic: (lib: string) => {
-        return `-l${lib}`;
+        return `-l:${lib}`;
     },
     libraryDirs: (path: string) => {
         return `-L${path}`;
     },
-    targetExtension: (_type: string) => {
+    intermediateExtension: (_: string) => {
+        return '.o';
+    },
+    targetExtension: (type: string) => {
+        if (type === 'ConsoleApp') {
+            return '';
+        } else if (type === 'StaticLib') {
+            return '.a';
+        } else if (type === 'SharedLib') {
+            return '.so';
+        }
         return undefined;
     },
 }
@@ -88,6 +98,8 @@ class ClangToolset implements CppToolset {
             }
         } else if (type === 'linker') {
             return 'ld';
+        } else if (type === 'archive') {
+            return 'llvm-ar';
         }
         throw new Error(`Unexpected tool type: ${type}.`);
     }
@@ -97,7 +109,7 @@ class ClangToolset implements CppToolset {
         if (fn) {
             return fn(value);
         } else {
-            throw new Error(`Flag [${name}] unsupported for toolset msc`);
+            throw new Error(`Flag [${name}] unsupported for toolset clang`);
         }
     }
 

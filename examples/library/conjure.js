@@ -2,9 +2,16 @@ group('group', (grp) => {
     project('library', (prj) => {
         language('C++');
         languageVersion('C++20');
-        toolset('msc:143');
         kind('StaticLib');
         files([ '*/**.hpp', '*/**.cpp', '*/**.ixx' ]);
+
+        when({ system: 'Windows' }, (_) => {
+            toolset('msc:143');
+        });
+
+        when({ system: 'Linux' }, (_) => {
+            toolset('clang');
+        });
 
         when({ configuration: 'Debug' }, (ctx) => {
             symbols('On');
