@@ -1,4 +1,5 @@
 import { CppToolset, DOMNode, Toolset, ToolsetRegistry } from "@conjure/core";
+import { extname } from "path";
 
 const shared = {
     optimize: {
@@ -59,6 +60,10 @@ const flagMapping: any = {
         return `-D${define}`;
     },
     linksStatic: (lib: string) => {
+        const ext = extname(lib);
+        if (ext) {
+            return `-l${lib}`;
+        }
         return `-l:${lib}`;
     },
     libraryDirs: (path: string) => {
