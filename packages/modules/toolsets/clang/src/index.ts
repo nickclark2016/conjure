@@ -15,7 +15,7 @@ const shared = {
         'C++': '--language=C++',
     },
     symbols: {
-        On: '-g',
+        On: '-g -gdwarf-4',
     },
     warnings: {
         Off: '-w',
@@ -62,9 +62,9 @@ const flagMapping: any = {
     linksStatic: (lib: string) => {
         const ext = extname(lib);
         if (ext) {
-            return `-l${lib}`;
+            return `-l:${lib}`;
         }
-        return `-l:${lib}`;
+        return `-l${lib}`;
     },
     libraryDirs: (path: string) => {
         return `-L${path}`;
@@ -130,7 +130,13 @@ class ClangToolset implements CppToolset {
         const sharedFlags = this.mapFlags(cfg, shared);
         const cflags = this.mapFlags(cfg, cFlags);
 
-        return [...sharedFlags, ...cflags];
+        const flags = [...sharedFlags, ...cflags];
+
+        if (cfg.kind === 'SharedLib') {
+            flags.push('-fPIC');
+        }
+
+        return flags;
     }
 
     getCppFlags(_cfg: DOMNode): string[] {
@@ -141,7 +147,13 @@ class ClangToolset implements CppToolset {
         const sharedFlags = this.mapFlags(cfg, shared);
         const cxxflags = this.mapFlags(cfg, cxxFlags);
 
-        return [...sharedFlags, ...cxxflags];
+        const flags = [...sharedFlags, ...cxxflags];
+
+        if (cfg.kind === 'SharedLib') {
+            flags.push('-fPIC');
+        }
+
+        return flags;
     }
 
     getLinkFlags(cfg: DOMNode): string[] {
@@ -151,6 +163,10 @@ class ClangToolset implements CppToolset {
         const libDirFlags = libDirs.map(dir => this.mapFlag('libraryDirs', dir));
 
         const flags = [...libDirFlags, ...linkerFlags].filter(flag => flag);
+
+        if (cfg.kind === 'SharedLib') {
+            flags.push('-fPIC');
+        }
 
         return flags;
     }

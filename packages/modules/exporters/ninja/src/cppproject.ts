@@ -96,7 +96,7 @@ function writeCxxCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgument
         writer.write(`description = cxx $out`);
         writer.write(`deps = msvc`);
     } else {
-        writer.write(`command = ${cxx} $CXXFLAGS -x c++ -c -o $out $in`);
+        writer.write(`command = ${cxx} $CXXFLAGS -x c++ -c -MD -MF $out.d -o $out $in`);
         writer.write(`description = cxx $out`);
         writer.write(`depfile = $out.d`);
         writer.write(`deps = gcc`);
@@ -131,27 +131,44 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
         if (depPrj) {
             const depTargetCfg = depPrj.getChildren().find(flt => flt.platform === cfg.platform && flt.configuration === cfg.configuration);
             if (depTargetCfg) {
-                const base = (() => {
+                const getBase = ((node: DOMNode) => {
                     try {
-                        return pathFromWorkspace(depTargetCfg);
+                        return pathFromWorkspace(node);
                     } catch (e) {
-                        return pathFromWorkspace(depPrj);
+                        const parent = node.getParent();
+                        if (parent) {
+                            return pathFromWorkspace(parent);
+                        }
+                        throw e;
                     }
-                })();
+                });
 
+                const base = getBase(depTargetCfg);
+
+                const targetName = `${depPrj.getName()}${toolset.mapFlag('targetExtension', depPrj.kind)}`;
                 const toLibFromDep = join(base, depTargetCfg.targetDirectory);
-                const targetName = `${depPrj.getName()}${toolset.mapFlag('targetExtension', 'StaticLib')}`;
+
                 if (depPrj.kind === 'StaticLib') {
                     cfg.libraryDirs.push(toLibFromDep);
-                    links.push(toolset.mapFlag('linksStatic', targetName));
-                } else if (depPrj.kind === 'SharedLib') {
+                    links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
+                } else if (depPrj.kind === 'SharedLib' && prj.kind === 'ConsoleApp') {
                     // todo: handle dynamic linkage
                     cfg.libraryDirs.push(toLibFromDep);
-                    links.push(targetName);
+                    if (toolset.name === 'clang') {
+                        const relative_path = relative(join(getBase(cfg), cfg.targetDirectory), join(getBase(depTargetCfg), depTargetCfg.targetDirectory));
+                        if (relative_path !== '' && relative_path !== '.') {
+                            links.push(`-Wl,-rpath,'$$ORIGIN'/${relative_path}`);
+                        } else {
+                            links.push(`-Wl,-rpath,'$$ORIGIN'`);
+                        }
+                    }
+                    links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
                 }
             }
         }
     });
+
+    links.push(...(cfg.linksStatic || []).map((lib: string) => toolset.mapFlag('linksStatic', lib)));
 
     cfg.libraryDirs = [...new Set(cfg.libraryDirs)];
 
