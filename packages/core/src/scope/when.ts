@@ -66,7 +66,7 @@ function buildFunctor() {
             throw new Error(`DOM state null.`);
         }
 
-        const isValid = node.apiName === 'project' || node.apiName === 'block' || node.apiName === 'group' || node.apiName === 'workspace';
+        const isValid = node.apiName === 'project' || node.apiName === 'block' || node.apiName === 'group' || node.apiName === 'workspace' || node.apiName === 'root';
 
         if (!isValid) {
             throw new Error(`Scope API when not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);
@@ -79,13 +79,18 @@ function buildFunctor() {
             test,
             callback,
             scriptLocation: location,
-            absoluteScriptPath: join(process.cwd(), location),
+            absoluteScriptPath: join(process.cwd(), location || "."),
             pathToWorkspace: pathToWks
         };
 
         const filters: Filter[] = node.filters || [];
         filters.push(filter);
-        node.filters = filters;
+        
+        if (node.apiName === 'root') {
+            node.configFilters = filters;
+        } else {
+            node.filters = filters;
+        }
     }
 
     return fn;
@@ -95,7 +100,7 @@ APIRegistry.get().register({
     name: 'when',
     accepts: APIAcceptedTypes.Function,
     expectedArgumentCount: 2,
-    allowedInScopes: ['project', 'block'],
+    allowedInScopes: ['project', 'block', 'group', 'root'],
     acceptedArguments: [],
     action: buildFunctor()
 });

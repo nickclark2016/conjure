@@ -45,7 +45,7 @@ export function pathToWorkspace(node: DOMNode): string {
         it = it.getParent();
     }
     if (!it) {
-        throw new Error(`Failed to get workspace owning node ${node.getName()}.`);
+        return ".";
     }
     
     const myPath = node.absoluteScriptLocation;

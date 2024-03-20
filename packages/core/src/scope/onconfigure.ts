@@ -15,7 +15,7 @@ APIRegistry.get().register({
             throw new Error(`DOM state null.`);
         }
 
-        const isValid = node.apiName === 'root';
+        const isValid = node.apiName === 'root' || node.apiName === 'when';
 
         if (!isValid) {
             throw new Error(`Scope API onConfigure not defined in scope ${node.getParent()?.apiName || '[unknown scope]'}`);

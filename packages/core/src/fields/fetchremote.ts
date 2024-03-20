@@ -1,8 +1,9 @@
 import { APIAcceptedTypes, APIInfo, APIRegistry } from "../api";
 import { createWriteStream, existsSync, mkdirSync } from "fs";
 import { get } from "https";
-import { basename } from "path";
+import { basename, join } from "path";
 import StreamZip from "node-stream-zip";
+import { includeFileStack } from "../include";
 
 type FetchRemoteZipArgs = {
     url?: string,
@@ -18,11 +19,11 @@ async function processZipFile(args: FetchRemoteZipArgs, zipPath: string) {
     const zip = new StreamZip.async({ file: zipPath });
 
     if (args.destination && !existsSync(args.destination)) {
-        mkdirSync(args.destination);
+        mkdirSync(args.destination, { recursive: true });
     }
 
     if (!args.files || args.files.length === 0) {
-        // Extract all files
+        console.log(`Extracting all files from ${zipPath} to ${args.destination || '.'}`);
         await zip.extract(null, args.destination || '.');
     } else {
         await Promise.all(args.files.map(async (file) => {
@@ -35,18 +36,26 @@ async function processZipFile(args: FetchRemoteZipArgs, zipPath: string) {
     
 }
 
-const fetchRemoteApiInfo: APIInfo = {
+const fetchRemoteZipApiInfo: APIInfo = {
     name: 'fetchRemoteZip',
     accepts: APIAcceptedTypes.Object,
     expectedArgumentCount: 1,
     allowedInScopes: ['onConfigure'],
     acceptedArguments: [],
     action: (args: FetchRemoteZipArgs) => {
+        const baseDir = includeFileStack[includeFileStack.length - 1];
+
         if (args.url === undefined) {
             throw new Error(`fetchRemoteZip requires a URL to fetch from.`);
         }
 
-        const filename = basename(args.url);
+        const outputDir = join(baseDir, './ConjureCache/');
+
+        if (!existsSync(outputDir)) {
+            mkdirSync(outputDir, { recursive: true });
+        }
+
+        const filename = join(outputDir, basename(args.url));
 
         if (existsSync(filename)) {
             console.log(`File ${filename} already exists. Skipping download.`);
@@ -56,22 +65,31 @@ const fetchRemoteApiInfo: APIInfo = {
 
         console.log(`Downloading ${args.url} to ${filename}`);
 
-        get(args.url, (res) => {
+        const updatedArgs: FetchRemoteZipArgs = {
+            ...args,
+            destination: join(baseDir, args.destination || '.')
+        };
+
+        if (updatedArgs.url === undefined) {
+            throw new Error(`fetchRemoteZip requires a URL to fetch from.`);
+        }
+
+        get(updatedArgs.url, (res) => {
             if (res.statusCode === 302) {
                 if (res.headers.location) {
                     const stream = createWriteStream(filename);
 
                     get(res.headers.location, (res) => {
                         if (res.statusCode !== 200) {
-                            throw new Error(`Failed to download ${args.url}. Received status code ${res.statusCode}`);
+                            throw new Error(`Failed to download ${updatedArgs.url}. Received status code ${res.statusCode}`);
                         }
 
                         res.pipe(stream);
 
                         stream.on('finish', () => {
                             stream.close();
-                            console.log(`Finished downloading ${args.url}`);
-                            processZipFile(args, filename);
+                            console.log(`Finished downloading ${updatedArgs.url}`);
+                            processZipFile(updatedArgs, filename);
                         });
                     });
                 } else {
@@ -83,12 +101,12 @@ const fetchRemoteApiInfo: APIInfo = {
 
                 stream.on('finish', () => {
                     stream.close();
-                    console.log(`Finished downloading ${args.url}`);
-                    processZipFile(args, filename);
+                    console.log(`Finished downloading ${updatedArgs.url}`);
+                    processZipFile(updatedArgs, filename);
                 });
             }
         });
     }
 };
 
-APIRegistry.get().register(fetchRemoteApiInfo);
+APIRegistry.get().register(fetchRemoteZipApiInfo);
