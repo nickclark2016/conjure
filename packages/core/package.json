@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "chevrotain": "^10.4.2",
-    "glob": "^8.0.3"
+    "glob": "^8.0.3",
+    "node-stream-zip": "^1.15.0"
   }
 }

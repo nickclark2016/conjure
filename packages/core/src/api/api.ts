@@ -93,6 +93,31 @@ export class APIAcceptedTypes {
     };
 
     /**
+     * API type for object values. Does not support merge.
+     */
+    static Object: IAPIAcceptedType = {
+        merge: function (_existing: any, _incoming: any) {
+            throw new Error(`Cannot merge two objects together.`);
+        },
+        replace: function (_existing: any, incoming: any) {
+            if (typeof incoming !== 'object') {
+                throw new Error(`Incoming value is not an object type.`);
+            }
+            return incoming;
+        },
+        remove: function (existing: any, incoming: any) {
+            if (existing === incoming) {
+                return null;
+            } else {
+                return existing;
+            }
+        },
+        valid: function (incoming: any): boolean {
+            return typeof incoming === 'object';
+        }
+    };
+
+    /**
      * API type for function values. Does not support merge.
      */
     static Function: IAPIAcceptedType = {

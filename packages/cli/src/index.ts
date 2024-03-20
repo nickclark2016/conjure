@@ -63,6 +63,12 @@ const app = command({
             // Bake the configuration state into a format the exporters can use
             bake(State.get(), bakeArgs);
 
+            // Process on configure commands
+            const onConfigureCommands = State.get().peek()?.onConfigureCommands || [];
+            for (const command of onConfigureCommands) {
+                command();
+            }
+
             // Use the selected exporter to write the state to file(s)
             exporter.functor(State.get(), {
                 name: exporterName,

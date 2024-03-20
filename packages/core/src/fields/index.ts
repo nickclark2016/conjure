@@ -2,6 +2,7 @@ export * from './buildevents';
 export * from './configurations';
 export * from './defines';
 export * from './dependson';
+export * from './fetchremote';
 export * from './fields';
 export * from './files';
 export * from './includes';
