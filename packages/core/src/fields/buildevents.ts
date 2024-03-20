@@ -12,8 +12,8 @@ const preBuildEventsInfo: FieldAPIInfo = {
     isFiles: false
 };
 
-const postBuildEventsInfo: FieldAPIInfo = {
-    name: 'postBuildEvents',
+const preLinkEvents: FieldAPIInfo = {
+    name: 'preLinkEvents',
     accepts: APIAcceptedTypes.List(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
     allowedInScopes: ['project', 'when', 'block'],
@@ -35,5 +35,5 @@ const postLinkEventsInfo: FieldAPIInfo = {
 };
 
 FieldRegistry.get().register(preBuildEventsInfo);
-FieldRegistry.get().register(postBuildEventsInfo);
+FieldRegistry.get().register(preLinkEvents);
 FieldRegistry.get().register(postLinkEventsInfo);

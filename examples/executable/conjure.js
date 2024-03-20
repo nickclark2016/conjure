@@ -44,4 +44,16 @@ project('executable', (prj) => {
     });
 
     uses([ 'library:public', 'example' ]);
+
+    preBuildEvents([
+        'echo "Pre-build event..."'
+    ]);
+
+    preLinkEvents([
+        'echo "Pre-Link event..."'
+    ]);
+
+    postLinkEvents([
+        'echo "Post-Link event..."'
+    ]);
 });

@@ -204,6 +204,67 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
     writer.write('');
 }
 
+function writePreBuildRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
+    const events = cfg.preBuildEvents || [];
+    if (events.length === 0) {
+        return;
+    }
+
+    writer.write(`rule prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.indent();
+    writer.write(`command = ${events.join(' && ')}`);
+    writer.outdent();
+    writer.write('');
+
+    writer.write(`build prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.write('');
+}
+
+function writePreLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
+    const events = cfg.preLinkEvents || [];
+    if (events.length === 0) {
+        return;
+    }
+
+    writer.write(`rule prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.indent();
+    writer.write(`command = ${events.join(' && ')}`);
+    writer.outdent();
+    writer.write('');
+
+    writer.write(`build prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}: prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.write('');
+}
+
+function writePostLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
+    const events = cfg.postLinkEvents || [];
+    if (events.length === 0) {
+        return;
+    }
+
+    writer.write(`rule postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.indent();
+    writer.write(`command = ${events.join(' && ')}`);
+    writer.outdent();
+    writer.write('');
+
+    const base = (() => {
+        try {
+            return pathFromWorkspace(cfg);
+        } catch (e) {
+            return pathFromWorkspace(prj);
+        }
+    })();
+
+    const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
+
+    const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
+    const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
+
+    writer.write(`build postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}: postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform} | ${targetPath}`);
+    writer.write('');
+}
+
 function writeFiles(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
     const toolset = (ToolsetRegistry.get().fetch(cfg.toolset) || ToolsetRegistry.get().fetch(prj.toolset)) as CppToolset;
     const intDir: string = cfg.intermediateDirectory || join(`obj`, cfg.platform, cfg.configuration);
@@ -219,6 +280,7 @@ function writeFiles(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer
 
     const targetDir = join(base, intDir);
     const pdbPath = join(targetDir, `${prj.getName()}.pdb`);
+    const preBuildEvents = cfg.preBuildEvents || [];
 
     writer.indent();
     writer.outdent();
@@ -231,7 +293,12 @@ function writeFiles(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer
                 const intermediate = `${parse(file).name}${toolset.mapFlag('intermediateExtension', '')}`;
                 const path = join(base, intDir, intermediate);
                 const fullPath = join(base, file);
-                writer.write(`build ${path}: ${rule} ${fullPath}`);
+
+                if (preBuildEvents.length > 0) {
+                    writer.write(`build ${path}: ${rule} ${fullPath} | prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+                } else {
+                    writer.write(`build ${path}: ${rule} ${fullPath}`);
+                }
                 if (cfg.symbols === 'On') {
                     writer.indent();
                     writer.write(`pdb = ${pdbPath}`);
@@ -290,6 +357,10 @@ function writeOutputs(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writ
         }
     });
 
+    if ((cfg.preLinkEvents || []).length > 0) {
+        deps.push(`prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    }
+
     const depString = deps.length > 0 ? `| ${deps.join(' ')}` : ''
 
     writer.write(`build ${targetPath}: link ${[...ints].join(' ')} ${depString}`);
@@ -315,10 +386,16 @@ function writePhonies(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writ
         }
     })();
 
-    const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
-    const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
+    // Depends on the post-link step
+    if ((cfg.postLinkEvents || []).length > 0) {
+        writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    } else {
+        const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
+        const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
+    
+        writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony ${targetPath}`);
+    }
 
-    writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony ${targetPath}`);
     writer.write('');
 }
 
@@ -330,8 +407,11 @@ export const perProjectConfigFunctions: PerProjectConfig[] = [
     writeCCompileRule,
     writeCxxCompileRule,
     writeLinkCompileRule,
+    writePreBuildRule,
+    writePreLinkRule,
     writeFiles,
     writeOutputs,
+    writePostLinkRule,
     writePhonies,
 ];
 

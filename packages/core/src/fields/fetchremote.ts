@@ -57,18 +57,18 @@ const fetchRemoteZipApiInfo: APIInfo = {
 
         const filename = join(outputDir, basename(args.url));
 
-        if (existsSync(filename)) {
-            console.log(`File ${filename} already exists. Skipping download.`);
-            processZipFile(args, filename);
-            return;
-        }
-
-        console.log(`Downloading ${args.url} to ${filename}`);
-
         const updatedArgs: FetchRemoteZipArgs = {
             ...args,
             destination: join(baseDir, args.destination || '.')
         };
+
+        if (existsSync(filename)) {
+            console.log(`File ${filename} already exists. Skipping download.`);
+            processZipFile(updatedArgs, filename);
+            return;
+        }
+
+        console.log(`Downloading ${args.url} to ${filename}`);
 
         if (updatedArgs.url === undefined) {
             throw new Error(`fetchRemoteZip requires a URL to fetch from.`);
