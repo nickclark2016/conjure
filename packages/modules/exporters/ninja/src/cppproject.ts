@@ -152,7 +152,6 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
                     cfg.libraryDirs.push(toLibFromDep);
                     links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
                 } else if (depPrj.kind === 'SharedLib' && prj.kind === 'ConsoleApp') {
-                    // todo: handle dynamic linkage
                     cfg.libraryDirs.push(toLibFromDep);
                     if (toolset.name === 'clang') {
                         const relative_path = relative(join(getBase(cfg), cfg.targetDirectory), join(getBase(depTargetCfg), depTargetCfg.targetDirectory));
@@ -161,8 +160,13 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
                         } else {
                             links.push(`-Wl,-rpath,'$$ORIGIN'`);
                         }
+                        links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
+                    } else if (toolset.name === 'msc') {
+                        // Handle stub libraries properly
+                        links.push(`${toolset.mapFlag('linksStatic', `${depPrj.getName()}${toolset.mapFlag('targetExtension', 'StaticLib')}`)}`);
+                    } else {
+                        links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
                     }
-                    links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
                 }
             }
         }
@@ -392,7 +396,7 @@ function writePhonies(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writ
     } else {
         const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
         const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
-    
+
         writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony ${targetPath}`);
     }
 
