@@ -53,7 +53,7 @@ project('executable', (prj) => {
         'echo "Pre-Link event..."'
     ]);
 
-    postLinkEvents([
-        'echo "Post-Link event..."'
+    postBuildEvents([
+        'echo "Post-Build event..."'
     ]);
 });

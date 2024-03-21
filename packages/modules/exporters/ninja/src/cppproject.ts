@@ -236,13 +236,13 @@ function writePreLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, 
     writer.write('');
 }
 
-function writePostLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
-    const events = cfg.postLinkEvents || [];
+function writePostBuildRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writer: TextWriter) {
+    const events = cfg.postBuildEvents || [];
     if (events.length === 0) {
         return;
     }
 
-    writer.write(`rule postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    writer.write(`rule postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
     writer.indent();
     writer.write(`command = ${events.join(' && ')}`);
     writer.outdent();
@@ -261,7 +261,7 @@ function writePostLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments,
     const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
     const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
 
-    writer.write(`build postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}: postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform} | ${targetPath}`);
+    writer.write(`build postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform} | ${targetPath}`);
     writer.write('');
 }
 
@@ -387,8 +387,8 @@ function writePhonies(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, writ
     })();
 
     // Depends on the post-link step
-    if ((cfg.postLinkEvents || []).length > 0) {
-        writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony postlink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    if ((cfg.postBuildEvents || []).length > 0) {
+        writer.write(`build ${prj.getName()}_${cfg.configuration}_${cfg.platform}: phony postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
     } else {
         const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
         const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
@@ -411,7 +411,7 @@ export const perProjectConfigFunctions: PerProjectConfig[] = [
     writePreLinkRule,
     writeFiles,
     writeOutputs,
-    writePostLinkRule,
+    writePostBuildRule,
     writePhonies,
 ];
 

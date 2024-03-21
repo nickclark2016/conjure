@@ -24,7 +24,7 @@ const preLinkEvents: FieldAPIInfo = {
 };
 
 const postLinkEventsInfo: FieldAPIInfo = {
-    name: 'postLinkEvents',
+    name: 'postBuildEvents',
     accepts: APIAcceptedTypes.List(APIAcceptedTypes.String),
     expectedArgumentCount: 1,
     allowedInScopes: ['project', 'when', 'block'],

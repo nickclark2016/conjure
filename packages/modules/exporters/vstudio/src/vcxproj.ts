@@ -196,7 +196,26 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
                 });
             }
 
-            // TODO: Pre-Build, Post-Build, and Post-Link Events
+            const preBuildEvents = node.preBuildEvents || [];
+            if (preBuildEvents.length > 0) {
+                writer.writeNode('PreBuildEvent', {}, (writer) => {
+                    writer.writeContentNode("Command", {}, preBuildEvents.join(" && "));
+                });
+            }
+
+            const preLinkEvents = node.preLinkEvents || [];
+            if (preLinkEvents.length > 0) {
+                writer.writeNode('PreLinkEvent', {}, (writer) => {
+                    writer.writeContentNode("Command", {}, preLinkEvents.join(" && "));
+                });
+            }
+
+            const postBuildEvents = node.postBuildEvents || [];
+            if (postBuildEvents.length > 0) {
+                writer.writeNode('PostBuildEvent', {}, (writer) => {
+                    writer.writeContentNode("Command", {}, postBuildEvents.join(" && "));
+                });
+            }
         });
     });
 }

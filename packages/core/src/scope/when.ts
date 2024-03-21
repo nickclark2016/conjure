@@ -83,12 +83,13 @@ function buildFunctor() {
             pathToWorkspace: pathToWks
         };
 
-        const filters: Filter[] = node.filters || [];
-        filters.push(filter);
-        
         if (node.apiName === 'root') {
+            const filters: Filter[] = node.configFilters || [];
+            filters.push(filter);
             node.configFilters = filters;
         } else {
+            const filters: Filter[] = node.filters || [];
+            filters.push(filter);
             node.filters = filters;
         }
     }
