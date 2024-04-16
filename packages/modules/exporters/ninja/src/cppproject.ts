@@ -214,13 +214,34 @@ function writePreBuildRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments,
         return;
     }
 
+    // Iterate over the pre build events and write them to the file
+    // Keep track of event index
+
+    for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        writer.write(`rule prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        writer.indent();
+        writer.write(`command = ${event}`);
+        writer.outdent();
+        writer.write('');
+
+        // If not the first event, depend on the previous event
+        if (i > 0) {
+            writer.write(`build prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i} | prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i - 1}`);
+        } else {
+            writer.write(`build prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        }
+        writer.write('');
+    }
+
     writer.write(`rule prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
     writer.indent();
     writer.write(`command = ${events.join(' && ')}`);
     writer.outdent();
     writer.write('');
 
-    writer.write(`build prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    // Merge all pre build events into a single build target
+    writer.write(`build prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: ${events.map((_: any, i: number) => `prebuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`).join(' ')}`);
     writer.write('');
 }
 
@@ -230,13 +251,34 @@ function writePreLinkRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments, 
         return;
     }
 
+    // Iterate over the post build events and write them to the file
+    // Keep track of event index
+
+    for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        writer.write(`rule prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        writer.indent();
+        writer.write(`command = ${event}`);
+        writer.outdent();
+        writer.write('');
+
+        // If not the first event, depend on the previous event
+        if (i > 0) {
+            writer.write(`build prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i} | prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i - 1}`);
+        } else {
+            writer.write(`build prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        }
+        writer.write('');
+    }
+
     writer.write(`rule prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
     writer.indent();
     writer.write(`command = ${events.join(' && ')}`);
     writer.outdent();
     writer.write('');
 
-    writer.write(`build prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}: prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
+    // Merge all pre link events into a single build target
+    writer.write(`build prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}: ${events.map((_: any, i: number) => `prelink_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`).join(' ')}`);
     writer.write('');
 }
 
@@ -246,11 +288,25 @@ function writePostBuildRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments
         return;
     }
 
-    writer.write(`rule postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}`);
-    writer.indent();
-    writer.write(`command = ${events.join(' && ')}`);
-    writer.outdent();
-    writer.write('');
+    // Iterate over the post build events and write them to the file
+    // Keep track of event index
+
+    for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        writer.write(`rule postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        writer.indent();
+        writer.write(`command = ${event}`);
+        writer.outdent();
+        writer.write('');
+
+        // If not the first event, depend on the previous event
+        if (i > 0) {
+            writer.write(`build postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i} | postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i - 1}`);
+        } else {
+            writer.write(`build postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}: postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`);
+        }
+        writer.write('');
+    }
 
     const base = (() => {
         try {
@@ -265,7 +321,8 @@ function writePostBuildRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArguments
     const targetDir = cfg.targetDirectory ? join(base, cfg.targetDirectory) : join(base, `bin`, cfg.platform, cfg.configuration);
     const targetPath = join(targetDir, `${prj.getName()}${toolset.mapFlag('targetExtension', cfg.kind)}`);
 
-    writer.write(`build postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform} | ${targetPath}`);
+    // Merge all post build events into a single build target
+    writer.write(`build postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}: ${events.map((_: any, i: number) => `postbuild_${prj.getName()}_${cfg.configuration}_${cfg.platform}_${i}`).join(' ')} | ${targetPath}`);
     writer.write('');
 }
 

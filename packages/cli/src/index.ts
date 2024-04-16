@@ -58,7 +58,8 @@ const app = command({
 
             const bakeArgs: BakeArgs = {
                 system,
-                architecture
+                architecture,
+                exporter: exporterName
             };
 
             // Bake the configuration state into a format the exporters can use
@@ -74,7 +75,7 @@ const app = command({
             }
 
             for (const filter of State.get().peek()?.configFilters || []) {
-                if (!filterMatch(filter, { platform: '', configuration: '', system: bakeArgs.system, architecture: bakeArgs.architecture, toolset: '' })) {
+                if (!filterMatch(filter, { platform: '', configuration: '', system: bakeArgs.system, architecture: bakeArgs.architecture, toolset: '', exporter: exporterName })) {
                     continue;
                 }
 

@@ -11,7 +11,8 @@ import { Filter, filterMatch } from "../scope";
  */
 export type BakeArgs = {
     system: string,
-    architecture: string
+    architecture: string,
+    exporter: string,
 };
 
 function getProject(node: DOMNode): DOMNode | null {
@@ -168,7 +169,8 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
                 configuration,
                 system: args.system || node.architecture || parent.system,
                 architecture: args.architecture || node.architecture || parent.architecture,
-                toolset: node.toolset || parent.toolset
+                toolset: node.toolset || parent.toolset,
+                exporter: args.exporter
             })) return;
 
             const tmp = new DOMNode("temp", parent);
@@ -181,6 +183,7 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
                     system: args.system || node.architecture || parent.system,
                     architecture: args.architecture || node.architecture || parent.architecture,
                     toolset: node.toolset || parent.toolset,
+                    exporter: args.exporter,
                     pathToWorkspace: filter.pathToWorkspace,
                     project: getProject(parent),
                     workspace: getWorkspace(parent),

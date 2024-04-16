@@ -1,4 +1,4 @@
-import { DOMNode, ExporterArguments, XmlWriter } from "@conjure/core";
+import { DOMNode, ExporterArguments, XmlWriter, pathToWorkspace } from "@conjure/core";
 import { dirname, extname, join, relative } from "path";
 import { vs2022 } from "./vs2022";
 
@@ -189,6 +189,10 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
                 });
             }
 
+            // Escape sequence for &&
+            const compoundAndEscape = "&amp;&amp;"
+            const pathToWks = pathToWorkspace(prj);
+
             const additionalLibDirs = node.libraryDirs || [];
             if (additionalLibDirs.length > 0) {
                 writer.writeNode('Lib', {}, (writer) => {
@@ -199,21 +203,21 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
             const preBuildEvents = node.preBuildEvents || [];
             if (preBuildEvents.length > 0) {
                 writer.writeNode('PreBuildEvent', {}, (writer) => {
-                    writer.writeContentNode("Command", {}, preBuildEvents.join(" && "));
+                    writer.writeContentNode("Command", {}, [`cd ${pathToWks}`, ...preBuildEvents].join(` ${compoundAndEscape} `));
                 });
             }
 
             const preLinkEvents = node.preLinkEvents || [];
             if (preLinkEvents.length > 0) {
                 writer.writeNode('PreLinkEvent', {}, (writer) => {
-                    writer.writeContentNode("Command", {}, preLinkEvents.join(" && "));
+                    writer.writeContentNode("Command", {}, [`cd ${pathToWks}`, ...preLinkEvents].join(` ${compoundAndEscape} `));
                 });
             }
 
             const postBuildEvents = node.postBuildEvents || [];
             if (postBuildEvents.length > 0) {
                 writer.writeNode('PostBuildEvent', {}, (writer) => {
-                    writer.writeContentNode("Command", {}, postBuildEvents.join(" && "));
+                    writer.writeContentNode("Command", {}, [`cd ${pathToWks}`, ...postBuildEvents].join(` ${compoundAndEscape} `));
                 });
             }
         });

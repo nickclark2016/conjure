@@ -12,6 +12,7 @@ export interface FilterTest {
     system: string;
     architecture: string;
     toolset: string;
+    exporter: string;
 }
 
 export interface FilterContext {
@@ -20,6 +21,7 @@ export interface FilterContext {
     system: string;
     architecture: string;
     toolset: string;
+    exporter: string;
     pathToWorkspace: string;
     project: any;
     workspace: any;
@@ -55,7 +57,7 @@ function matchElement(test: string, incoming: string): boolean {
 export function filterMatch(filter: Filter, incoming: FilterTest) {
     const test = filter.test;
     return matchElement(test.configuration, incoming.configuration) && matchElement(test.platform, incoming.platform) && matchElement(test.system, incoming.system)
-        && matchElement(test.architecture, incoming.architecture) && matchElement(test.toolset, incoming.toolset);
+        && matchElement(test.architecture, incoming.architecture) && matchElement(test.toolset, incoming.toolset) && matchElement(test.exporter, incoming.exporter);
 }
 
 function buildFunctor() {
