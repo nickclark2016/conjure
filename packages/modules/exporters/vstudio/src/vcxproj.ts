@@ -304,7 +304,7 @@ function writeExtensionTargets(_: DOMNode, _version: any, writer: XmlWriter) {
     writer.writeNode("ImportGroup", { Label: "ExtensionTargets" }, (_) => { });
 }
 
-type VcxProjFunc = (prj: DOMNode, version: any, writer: XmlWriter) => void;
+export type VcxProjFunc = (prj: DOMNode, version: any, writer: XmlWriter) => void;
 
 export const functionArray: Array<VcxProjFunc> = [
     writeConfigurationGroups,

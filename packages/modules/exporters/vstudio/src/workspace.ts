@@ -2,6 +2,7 @@ import { DOMNode, ExporterArguments, TextWriter } from "@conjure/core";
 import { join, normalize, relative, resolve } from "path";
 import { v4 as uuidV4 } from "uuid";
 import { vcxproj } from "./vcxproj";
+import { vcxprojuser } from "./vcxprojuser";
 
 // Found at: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
 const projectTypeGuid: any = {
@@ -20,6 +21,11 @@ const vstudioVersionMapper: any = {
 const projectExporterMapper: any = {
     'C': vcxproj,
     'C++': vcxproj
+};
+
+const projectUserExporterMapper: any = {
+    'C': vcxprojuser,
+    'C++': vcxprojuser
 };
 
 function applyUuids(nodes: DOMNode[]) {
@@ -189,5 +195,8 @@ export function workspace(wks: DOMNode, args: ExporterArguments) {
     projects.forEach((prj) => {
         const exporter = projectExporterMapper[prj.language];
         exporter(prj, args);
+
+        const userExporter = projectUserExporterMapper[prj.language];
+        userExporter(prj, args);
     });
 }

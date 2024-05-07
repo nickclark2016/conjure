@@ -1,5 +1,6 @@
 export * from './buildevents';
 export * from './configurations';
+export * from './debugsettings';
 export * from './defines';
 export * from './dependson';
 export * from './fetchremote';
