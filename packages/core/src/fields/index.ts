@@ -14,6 +14,7 @@ export * from './links';
 export * from './optimize';
 export * from './platforms';
 export * from './runtime';
+export * from './subsystem';
 export * from './symbols';
 export * from './targetdir';
 export * from './targetext';

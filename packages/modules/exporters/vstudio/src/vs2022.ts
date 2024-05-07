@@ -14,7 +14,7 @@ export const vs2022: any = {
             'clang': 'ClangCL',
         },
         kind: {
-            ConsoleApp: {
+            Executable: {
                 Name: 'Application',
                 Extension: '.exe',
                 Subsystem: 'Console',

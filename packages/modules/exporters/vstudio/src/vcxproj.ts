@@ -167,7 +167,7 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
             });
 
             writer.writeNode("Link", {}, (writer) => {
-                writer.writeContentNode("SubSystem", {}, version.vcxproj.kind[node.kind].Subsystem);
+                writer.writeContentNode("SubSystem", {}, node.subsystem || version.vcxproj.kind[node.kind].Subsystem);
 
                 const symbols = node.symbols;
                 if (symbols && symbols !== 'Off') {

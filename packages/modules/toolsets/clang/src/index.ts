@@ -73,7 +73,7 @@ const flagMapping: any = {
         return '.o';
     },
     targetExtension: (type: string) => {
-        if (type === 'ConsoleApp') {
+        if (type === 'Executable') {
             return '';
         } else if (type === 'StaticLib') {
             return '.a';

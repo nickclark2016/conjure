@@ -1,10 +1,11 @@
 project('executable', (prj) => {
     language('C++');
-    kind('ConsoleApp');
+    kind('Executable');
     dependsOn(['library']);
 
     when({ system: 'Windows' }, (_) => {
         toolset('msc:143');
+        subsystyem('Console');
     });
 
     when({ system: 'Linux' }, (_) => {

@@ -57,8 +57,11 @@ const linkFlags = {
     kind: {
         SharedLib: '/DLL',
         StaticLib: '/SUBSYSTEM:Console',
-        Console: '/SUBSYSTEM:Console'
     },
+    subsystem: {
+        Console: '/SUBSYSTEM:Console',
+        Windows: '/SUBSYSTEM:Windows',
+    }
 };
 
 const machine: any = {
@@ -98,7 +101,7 @@ const flagMapping: any = {
         return '.obj';
     },
     targetExtension: (type: string) => {
-        if (type === 'ConsoleApp') {
+        if (type === 'Executable') {
             return '.exe';
         } else if (type === 'StaticLib') {
             return '.lib';
@@ -192,7 +195,7 @@ class MSCToolset implements CppToolset {
             "odbccp32.lib",
         ];
 
-        const isNotArchive = cfg.kind === 'ConsoleApp' || cfg.kind === 'SharedLib';
+        const isNotArchive = cfg.kind === 'Executable' || cfg.kind === 'SharedLib';
 
         const flags = (() => {
             if (cfg.kind === 'StaticLib') {

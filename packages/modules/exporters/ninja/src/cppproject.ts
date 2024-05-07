@@ -151,7 +151,7 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
                 if (depPrj.kind === 'StaticLib') {
                     cfg.libraryDirs.push(toLibFromDep);
                     links.push(`${toolset.mapFlag('linksStatic', targetName)}`);
-                } else if (depPrj.kind === 'SharedLib' && prj.kind === 'ConsoleApp') {
+                } else if (depPrj.kind === 'SharedLib' && prj.kind === 'Executable') {
                     cfg.libraryDirs.push(toLibFromDep);
                     if (toolset.name === 'clang') {
                         const relative_path = relative(join(getBase(cfg), cfg.targetDirectory), join(getBase(depTargetCfg), depTargetCfg.targetDirectory));

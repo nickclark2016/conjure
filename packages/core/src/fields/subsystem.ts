@@ -1,15 +1,15 @@
 import { APIAcceptedTypes } from "../api";
 import { APIBehaviorOnAccept, FieldAPIInfo, FieldRegistry } from "./fields";
 
-const kindApiInfo: FieldAPIInfo = {
-    name: 'kind',
+const subsystemApiInfo: FieldAPIInfo = {
+    name: 'subsystem',
     accepts: APIAcceptedTypes.String,
     expectedArgumentCount: 1,
     allowedInScopes: ['project', 'when', 'block'],
-    acceptedArguments: [ 'Executable', 'StaticLib', 'SharedLib' ],
+    acceptedArguments: [ 'Console', 'Windows' ],
     acceptBehavior: APIBehaviorOnAccept.Replace,
     inherited: true,
     isFiles: false
 };
 
-FieldRegistry.get().register(kindApiInfo);
+FieldRegistry.get().register(subsystemApiInfo);
