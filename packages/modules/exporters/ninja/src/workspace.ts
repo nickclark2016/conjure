@@ -43,6 +43,17 @@ function writeTargets(wks: DOMNode, _args: ExporterArguments, writer: TextWriter
         const deps = projects.map(prj => `${prj.getName()}_${key}`).join(' ');
         writer.write(`build ${key}: phony ${deps}`)
     });
+    writer.write('');
+
+    writer.write('# Build Groups');
+    const groups = wks.getAllNodes().filter(node => node.apiName === 'group');
+    tuples.forEach(([platform, config]) => {
+        groups.forEach(group => {
+            const key = `${group.getName()}_${config}_${platform}`;
+            const deps = group.getAllNodes().filter(prj => prj.apiName === 'project').map(prj => `${prj.getName()}_${config}_${platform}`).join(' ');
+            writer.write(`build ${key}: phony ${deps}`)
+        });
+    });
 
     writer.write('');
     writer.write('# Default Target')
@@ -59,7 +70,7 @@ export function workspace(wks: DOMNode, args: ExporterArguments) {
     const wksFileLocation = join(wks.location, `${wks.getName()}.ninja`);
     const file = new TextWriter(wksFileLocation);
     file.useSpaceIndent(2);
-    
+
     perWorkspaceFunctions.forEach(fn => fn(wks, args, file));
 
     file.close();

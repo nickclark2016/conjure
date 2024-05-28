@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "compile": "tsc -b tsconfig.build.json",
-    "start": "node ./packages/cli/build/index.js vstudio -p=./examples/conjure.js"
+    "start": "node ./packages/cli/build/index.js vstudio -p=./examples/conjure.js",
+    "pkg-windows": "npm --workspace=@conjure/cli run pkg-windows-x64"
   },
   "keywords": [],
   "author": "",
