@@ -5,9 +5,14 @@ export interface ExporterArguments {
     version: string;
 };
 
+export type Builder = {
+    functor: (state: State, args: ExporterArguments) => Promise<boolean>;
+};
+
 export type Exporter = {
     name: string;
     functor: (state: State, args: ExporterArguments) => void;
+    builder?: Builder;
 };
 
 export class ExporterRegistry {
@@ -33,5 +38,9 @@ export class ExporterRegistry {
 
     remove(name: string): boolean {
         return this._exporters.delete(name);
+    }
+
+    all(): ReadonlySet<Exporter> {
+        return new Set(this._exporters.values());
     }
 };

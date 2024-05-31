@@ -1,6 +1,8 @@
+import { requestBuild } from "@conjure/build";
 import { bake, BakeArgs, ExporterRegistry, filterMatch, Host, include, includeFileStack, pathToWorkspace, State } from "@conjure/core";
 import { command } from "cmd-ts";
 import { File } from "cmd-ts/batteries/fs";
+import { boolean, flag } from "cmd-ts/dist/cjs/flag";
 import { option } from "cmd-ts/dist/cjs/option";
 import { positional } from "cmd-ts/dist/cjs/positional";
 import { run } from "cmd-ts/dist/cjs/runner";
@@ -40,9 +42,14 @@ const app = command({
             short: 'a',
             description: 'Architecture type override for conjure script filters',
             defaultValue: () => Host.architecture()
+        }),
+        build: flag({
+            long: 'build',
+            short: 'b',
+            description: 'Build the project after configuring it',
         })
     },
-    handler: ({ exporterName, scriptPath, system, architecture }) => {
+    handler: ({ exporterName, scriptPath, system, architecture, build }) => {
         try {
             // Execute the conjure configuration script
             const filepath = scriptPath;
@@ -95,6 +102,17 @@ const app = command({
                 name: exporterName,
                 version: "2022"
             });
+
+            if (build) {
+                requestBuild({
+                    exporter: exporter,
+                    args: {
+                        name: exporterName,
+                        version: "2022"
+                    },
+                    state: State.get()
+                });
+            }
         } catch (err) {
             console.log(err);
         }

@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@conjure/build": "^1.0.0",
     "@conjure/clang": "^1.0.0",
     "@conjure/core": "^1.0.0",
     "@conjure/msc": "^1.0.0",

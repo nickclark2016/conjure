@@ -77,7 +77,7 @@ function writeProjectOrGroup(wks: DOMNode, node: DOMNode, args: ExporterArgument
             file.write(`ProjectSection(ProjectDependencies) = postProject`);
             file.indent();
             dependencies.forEach((dependsOnProject: DOMNode) => {
-                file.write(`{${dependsOnProject}} = {${dependsOnProject.uuid}}`)
+                file.write(`{${dependsOnProject.uuid}} = {${dependsOnProject.uuid}}`)
             });
             file.outdent();
             file.write(`EndProjectSection`);
@@ -154,7 +154,7 @@ function writeGlobal(sln: DOMNode, prjs: DOMNode[], groups: DOMNode[], _args: Ex
         })
         file.outdent();
 
-        file.write('EndGlobalSolution');
+        file.write('EndGlobalSection');
     }
 
     file.outdent();

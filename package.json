@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "workspaces": [
+    "packages/build",
     "packages/cli",
     "packages/core",
     "packages/modules/exporters/ninja",

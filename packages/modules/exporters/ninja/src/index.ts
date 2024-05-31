@@ -1,5 +1,6 @@
 import { ExporterArguments, ExporterRegistry, State } from "@conjure/core";
 import { workspace } from "./workspace";
+import { build } from "./build";
 
 function ninja(state: State, args: ExporterArguments) {
     const root = state.peek();
@@ -17,5 +18,8 @@ function ninja(state: State, args: ExporterArguments) {
 
 ExporterRegistry.get().register({
     name: 'ninja',
-    functor: ninja
+    functor: ninja,
+    builder: {
+        functor: build
+    }
 });

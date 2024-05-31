@@ -9,6 +9,9 @@
       "path": "../core"
     },
     {
+      "path": "../build"
+    },
+    {
       "path": "../modules/exporters/ninja"
     },
     {

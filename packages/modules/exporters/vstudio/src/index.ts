@@ -1,5 +1,6 @@
 import { ExporterArguments, ExporterRegistry, State } from "@conjure/core";
 import { workspace } from "./workspace";
+import { build } from "./build";
 
 function vstudio(state: State, args: ExporterArguments) {
     const root = state.peek();
@@ -17,5 +18,8 @@ function vstudio(state: State, args: ExporterArguments) {
 
 ExporterRegistry.get().register({
     name: 'vstudio',
-    functor: vstudio
+    functor: vstudio,
+    builder: {
+        functor: build
+    }
 });

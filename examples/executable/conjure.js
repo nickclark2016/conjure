@@ -5,7 +5,7 @@ project('executable', (prj) => {
 
     when({ system: 'Windows' }, (_) => {
         toolset('msc:143');
-        subsystyem('Console');
+        subsystem('Console');
     });
 
     when({ system: 'Linux' }, (_) => {

@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"label": "Package Windows",
+			"script": "pkg-windows",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"dependsOn": [ "Compile" ],
+			"detail": "Builds Windows Binary"
+		},
+		{
+			"type": "npm",
+			"label": "Compile",
+			"script": "compile",
+			"group": {
+				"kind": "build",
+				"isDefault": false
+			},
+			"problemMatcher": [],
+			"detail": "Compiles the project"
+		}
+	]
+}
