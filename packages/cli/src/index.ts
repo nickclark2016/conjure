@@ -47,9 +47,14 @@ const app = command({
             long: 'build',
             short: 'b',
             description: 'Build the project after configuring it',
-        })
+        }),
+        noExport: flag({
+            long: 'no-export',
+            short: 'n',
+            description: 'Do not export the project files. This is only valid if --build is also specified.',
+        }),
     },
-    handler: ({ exporterName, scriptPath, system, architecture, build }) => {
+    handler: ({ exporterName, scriptPath, system, architecture, build, noExport }) => {
         try {
             // Execute the conjure configuration script
             const filepath = scriptPath;
@@ -97,11 +102,17 @@ const app = command({
 
             includeFileStack.pop();
 
-            // Use the selected exporter to write the state to file(s)
-            exporter.functor(State.get(), {
-                name: exporterName,
-                version: "2022"
-            });
+            if (noExport && !build) {
+                console.warn('The --no-export flag is only valid if --build is also specified. Ignoring --no-export flag.');
+            }
+
+            if (!noExport || !build) {
+                // Use the selected exporter to write the state to file(s)
+                exporter.functor(State.get(), {
+                    name: exporterName,
+                    version: "2022"
+                });
+            }
 
             if (build) {
                 requestBuild({
@@ -114,7 +125,7 @@ const app = command({
                 });
             }
         } catch (err) {
-            console.log(err);
+            console.error(err);
         }
     },
     version: '1.0.0'

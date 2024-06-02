@@ -20,7 +20,10 @@ export async function build(state: State, args: ExporterArguments): Promise<bool
     }
 
     const projects = root.getAllNodes().filter((node) => node.apiName === 'project');
-    const anyMsc = projects.some(prj => prj.toolset === 'msc');
+    const anyMsc = projects.some(project => {
+        const toolset = project.toolset;
+        return toolset !== undefined && (toolset === 'msc' || toolset.startsWith('msc:'));
+    });
 
     let vsdevcmdPath: string | undefined = undefined;
     const requiresMsc = anyMsc && Host.system() === System.Windows;
@@ -147,7 +150,7 @@ export async function build(state: State, args: ExporterArguments): Promise<bool
                 }
             }
 
-            buildcommands.push(`${ninjaPath} -f ${workspacePath} ${cfg}_${platform}`);
+            buildcommands.push(`${ninjaPath} -v -f ${workspacePath} ${cfg}_${platform}`);
 
             // Join commands into a single command
             const command = buildcommands.join(" && ");
@@ -155,9 +158,7 @@ export async function build(state: State, args: ExporterArguments): Promise<bool
             console.log(`Building configuration ${cfg} and platform ${platform} for workspace ${wks.getName()}`);
 
             // Execute the command
-            const { stdout, stderr } = exec(command, {
-                cwd: wks.location
-            });
+            const { stdout, stderr } = exec(command);
             if (stderr) {
                 const errorOutput = await text(stderr);
                 if (errorOutput) {
