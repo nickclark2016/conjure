@@ -1,4 +1,4 @@
-import { ExporterArguments, ExporterRegistry, State } from "@conjure/core";
+import { APIAcceptedTypes, APIBehaviorOnAccept, APIInfo, APIRegistry, ExporterArguments, ExporterRegistry, FieldAPIInfo, FieldRegistry, State } from "@conjure/core";
 import { workspace } from "./workspace";
 import { build } from "./build";
 
@@ -23,3 +23,19 @@ ExporterRegistry.get().register({
         functor: build
     }
 });
+
+// Visual Studio specific APIs
+
+const multiProcessorCompilation: FieldAPIInfo = {
+    name: "multiProcessorCompilation",
+    accepts: APIAcceptedTypes.Boolean,
+    expectedArgumentCount: 1,
+    allowedInScopes: ['project', 'when', 'block'],
+    acceptedArguments: [true, false],
+    acceptBehavior: APIBehaviorOnAccept.Replace,
+    default: true,
+    inherited: true,
+    isFiles: false
+};
+
+FieldRegistry.get().register(multiProcessorCompilation);

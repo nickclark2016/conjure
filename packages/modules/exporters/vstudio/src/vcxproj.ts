@@ -164,6 +164,11 @@ function writeItemDefinitionGroups(prj: DOMNode, version: any, writer: XmlWriter
 
                 const externalWarningLevel = node.externalWarnings || 'Default';
                 writer.writeContentNode("ExternalWarningLevel", {}, version.vcxproj.warningLevel[externalWarningLevel]);
+
+                const multiProcessorCompilation = node.multiProcessorCompilation;
+                if (multiProcessorCompilation) {
+                    writer.writeContentNode("MultiProcessorCompilation", {}, "true");
+                }
             });
 
             writer.writeNode("Link", {}, (writer) => {
