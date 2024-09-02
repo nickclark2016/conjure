@@ -295,7 +295,7 @@ function applyBlocks(node: DOMNode, blocks: ReadonlyArray<DOMNode>) {
         if (blockName) {
             const block = mapping.get(blockName);
             if (!block) {
-                throw new Error(`Failed to find block with name ${block}.`);
+                throw new Error(`Failed to find block with name ${blockName}.`);
             }
             queue.push(...(block.uses || []));
             deps.push(blockName);
