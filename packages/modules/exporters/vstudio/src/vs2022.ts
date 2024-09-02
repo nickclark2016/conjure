@@ -46,7 +46,10 @@ export const vs2022: any = {
                 '.cxx',
                 '.cppm',
                 '.ixx',
-            ]
+            ],
+            Natvis: [
+                '.natvis',
+            ],
         },
         optimizations: {
             Off: 'Disabled',

@@ -16,6 +16,19 @@ describe('Expression Matcher Tests', () => {
         expect(result).toBeTruthy();
     });
 
+    test('Math simple equality with colon', () => {
+        const parser = new ExpressionParser();
+        parser.reset();
+
+        const matcher = createMatcher(parser);
+        expect(matcher).toBeDefined();
+
+        const input = 'msc:143';
+        parser.input = FormulaLexer.tokenize(input).tokens;
+        const result = matcher.visit(parser.expression(), { value: 'msc:143' });
+        expect(result).toBeTruthy();
+    });
+
     test('Match simple equality with case mismatch', () => {
         const parser = new ExpressionParser();
         parser.reset();

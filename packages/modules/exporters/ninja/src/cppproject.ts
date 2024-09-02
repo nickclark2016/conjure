@@ -178,6 +178,14 @@ function writeLinkCompileRule(prj: DOMNode, cfg: DOMNode, _args: ExporterArgumen
 
     const linkFlags = toolset.getLinkFlags(cfg) || [];
 
+    if (toolset.name === 'msc' && cfg.symbols === 'On' && cfg.kind !== 'StaticLib') {
+        // Add Natvis files
+        const natvisFiles = cfg.natvisFiles || [];
+        natvisFiles.forEach((natvis: string) => {
+            linkFlags.push(`/natvis:${join(base, natvis)}`);
+        });
+    }
+
     writer.write(`LINKFLAGS = ${linkFlags.join(' ').trim()}`);
     writer.write('rule link');
     writer.indent();

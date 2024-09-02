@@ -70,14 +70,19 @@ function bakeInheritedProperties(node: DOMNode) {
     registeredProperties.forEach((prop) => {
         const name = prop.name;
         const existing: any[] = node[name] || [];
-        if (prop.field?.behaviorOnAccept() === APIBehaviorOnAccept.Merge) {
-            // merge, don't replace
-            node[name] = prop.field?.acceptedTypes().merge(existing, prop.value);
-        } else if (prop.field?.behaviorOnAccept() === APIBehaviorOnAccept.Replace) {
-            // don't replace if the value already exists
-            if (node[name] === undefined) {
-                node[name] = prop.field?.acceptedTypes().replace(existing, prop.value);
+        try {
+            if (prop.field?.behaviorOnAccept() === APIBehaviorOnAccept.Merge) {
+                // merge, don't replace
+                node[name] = prop.field?.acceptedTypes().merge(existing, prop.value);
+            } else if (prop.field?.behaviorOnAccept() === APIBehaviorOnAccept.Replace) {
+                // don't replace if the value already exists
+                if (node[name] === undefined) {
+                    node[name] = prop.field?.acceptedTypes().replace(existing, prop.value);
+                }
             }
+        } catch (e) {
+            console.error(`Failed to merge property ${name} for node ${node.getName()}`);
+            throw e;
         }
     });
 }
@@ -101,20 +106,48 @@ function bakeDefaults(node: DOMNode) {
     });
 }
 
-function bakeFiles(node: DOMNode) {
-    const filePatterns: string[] = node.files || [];
+function expandFilePatterns(patterns: string[], cwd: string): string[] {
     const filesFound: string[] = [];
 
-    filePatterns.forEach((pattern) => {
-        if (existsSync(join(node.location, pattern))) {
+    patterns.forEach((pattern) => {
+        if (existsSync(join(cwd, pattern))) {
             filesFound.push(normalize(pattern));
         } else {
-            const matches = glob.sync(pattern, { cwd: node.location }).map((file) => {
+            const matches = glob.sync(pattern, { cwd }).map((file) => {
                 return normalize(file);
             });
             filesFound.push(...matches);
         }
     });
+
+    return filesFound;
+}
+
+function expandAllFilePatterns(node: DOMNode, cwd: string) {
+    FieldRegistry.get().all().filter(field => field.isFilePattern()).forEach(field => {
+        const name = field.name();
+        const contents = node[name];
+        if (contents) {
+            if (Array.isArray(contents)) {
+                if (contents.length === 0) {
+                    return;
+                }
+
+                node[name] = expandFilePatterns(contents, cwd);
+            } else if (typeof contents === 'string') {
+                node[name] = expandFilePatterns([contents], cwd);
+            } else {
+                throw new Error(`Unknown field type - ${field.name()}`);
+            }
+        }
+    });
+}
+
+function bakeFiles(node: DOMNode) {
+    const filePatterns: string[] = node.files || [];
+
+    const filesFound = expandFilePatterns(filePatterns, node.location);
+
     node.inputFiles = filesFound;
 }
 
@@ -131,7 +164,7 @@ function normalizeFileFields(node: DOMNode) {
                 throw new Error(`Unknown field type.`);
             }
         }
-    })
+    });
 }
 
 function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
@@ -161,7 +194,7 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
 
         const filters: Filter[] = parent.filters || [];
 
-    filters.forEach((filter: Filter) => {
+        filters.forEach((filter: Filter) => {
             // Cannot use filter, as it's neeeded process these sequentially, not in stages. This allows previous filters to
             // apply changes for future defined filters
             if (!filterMatch(filter, {
@@ -200,11 +233,14 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
             State.get().activate(old);
             parent.removeChild(tmp);
 
+            const pathToFilterNode = relative(parent.absoluteScriptLocation, filter.absoluteScriptPath);
+
+            expandAllFilePatterns(tmp, filter.absoluteScriptPath);
+
             FieldRegistry.get().all().filter(field => {
                 const value = tmp[field.name()];
                 if (value) {
                     if (field.isFileField()) {
-                        const pathToFilterNode = relative(parent.absoluteScriptLocation, filter.absoluteScriptPath);
                         if (Array.isArray(value)) {
                             tmp[field.name()] = value.map((v) => join(pathToFilterNode, v));
                         } else if (typeof value === 'string') {
@@ -219,7 +255,7 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
                             case APIBehaviorOnAccept.Merge: {
                                 return field.acceptedTypes().merge(node[field.name()], tmp[field.name()]);
                             }
-                            case APIBehaviorOnAccept.Remove:  {
+                            case APIBehaviorOnAccept.Remove: {
                                 return field.acceptedTypes().remove(node[field.name()], tmp[field.name()]);
                             }
                             case APIBehaviorOnAccept.Replace: {
@@ -244,7 +280,7 @@ function bakeConfigurationTuples(parent: DOMNode, args: BakeArgs) {
 
         bakeInheritedProperties(node);
         bakeFiles(node);
-        normalizeFileFields(node);
+        expandAllFilePatterns(node, node.location);
     });
 }
 
@@ -346,6 +382,7 @@ function bakeProject(prj: DOMNode, args: BakeArgs) {
     bakeLocation(prj);
     bakeInheritedProperties(prj);
     bakeFiles(prj);
+    expandAllFilePatterns(prj, prj.location);
     bakeConfigurationTuples(prj, args);
 }
 

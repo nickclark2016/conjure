@@ -44,6 +44,10 @@ project('executable', (prj) => {
         intermediateDirectory(`${ctx.pathToWorkspace}/bin-int/${ctx.platform}/${prj.name}/${ctx.configuration}`);
     });
 
+    when({ toolset: 'msc' }, (_) => {
+        console.log('Hello, MSC!');
+    });
+
     uses([ 'library:public', 'example' ]);
 
     preBuildEvents([

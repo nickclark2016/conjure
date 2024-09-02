@@ -16,7 +16,7 @@ const Whitespace = createToken({
 
 const StringLiteral = createToken({
     name: TokenName.StringLiteral,
-    pattern: /[a-zA-Z]\w*/
+    pattern: /[a-zA-Z][\w\-:_]*/
 });
 
 const AndOperator = createToken({

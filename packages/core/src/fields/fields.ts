@@ -1,4 +1,4 @@
-import {  APIRegistry, IAPIAcceptedType } from "../api";
+import { APIRegistry, IAPIAcceptedType } from "../api";
 import { State } from "../state";
 
 export enum APIBehaviorOnAccept {
@@ -17,6 +17,7 @@ export type FieldAPIInfo = {
     acceptBehavior: APIBehaviorOnAccept;
     inherited: boolean;
     isFiles: boolean;
+    isFilePattern?: boolean;
     default?: any;
 }
 
@@ -57,6 +58,10 @@ export class FieldAPI {
         return this._info.isFiles;
     }
 
+    isFilePattern(): boolean {
+        return this.isFileField() && this._info.isFilePattern || false;
+    }
+
     defaultValue(): any {
         return this._info.default;
     }
@@ -73,7 +78,7 @@ function buildAction(info: FieldAPIInfo) {
                     case APIBehaviorOnAccept.Merge: {
                         return info.accepts.merge(existing, incoming);
                     }
-                    case APIBehaviorOnAccept.Remove:  {
+                    case APIBehaviorOnAccept.Remove: {
                         return info.accepts.remove(existing, incoming);
                     }
                     case APIBehaviorOnAccept.Replace: {

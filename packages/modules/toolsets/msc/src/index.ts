@@ -1,4 +1,4 @@
-import { CppToolset, DOMNode, Toolset, ToolsetRegistry } from "@conjure/core";
+import { APIAcceptedTypes, APIBehaviorOnAccept, CppToolset, DOMNode, FieldAPIInfo, FieldRegistry, Toolset, ToolsetRegistry } from "@conjure/core";
 
 const shared = {
     clr: {
@@ -218,5 +218,19 @@ class MSCToolset implements CppToolset {
 };
 
 const mscToolset: Toolset = new MSCToolset();
-
 ToolsetRegistry.get().register(mscToolset);
+
+const natvisFiles: FieldAPIInfo = {
+    name: "natvisFiles",
+    accepts: APIAcceptedTypes.Set(APIAcceptedTypes.String),
+    expectedArgumentCount: 1,
+    allowedInScopes: ['project', 'when', 'block'],
+    acceptedArguments: [],
+    acceptBehavior: APIBehaviorOnAccept.Merge,
+    default: [],
+    inherited: true,
+    isFiles: true,
+    isFilePattern: true,
+};
+
+FieldRegistry.get().register(natvisFiles);

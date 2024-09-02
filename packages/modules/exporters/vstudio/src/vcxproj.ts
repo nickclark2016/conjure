@@ -282,6 +282,33 @@ function writeFiles(prj: DOMNode, version: any, writer: XmlWriter) {
             }
         });
     });
+
+    writer.writeNode("ItemGroup", {}, (writer) => {
+        const natvis = new Set(prj.getAllNodes().flatMap(node => {
+            return (node.natvisFiles || []).filter((file: string) => {
+                const extension = extname(file);
+                return version.vcxproj.extensions.Natvis.includes(extension);
+            });
+        }));
+
+        natvis.forEach((file: string) => {
+            const filters = prj.getChildren().filter(child => child.apiName === 'when');
+            const filtersWithoutChild = filters.filter(child => !child.natvisFiles.includes(file));
+            if (filtersWithoutChild.length === filters.length || filtersWithoutChild.length === 0) {
+                writer.writeContentNode("Natvis", {
+                    Include: file
+                });
+            } else {
+                writer.writeNode("Natvis", { Include: file }, (writer) => {
+                    filtersWithoutChild.forEach((filter) => {
+                        writer.writeContentNode("ExcludedFromBuild", {
+                            Condition: `'$(Configuration)|$(Platform)' == '${filter.configuration}|${filter.platform}'`
+                        }, "true")
+                    });
+                });
+            }
+        });
+    });
 }
 
 function writeProjectReferences(prj: DOMNode, _version: any, writer: XmlWriter) {
